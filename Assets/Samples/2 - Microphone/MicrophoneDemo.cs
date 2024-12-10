@@ -1,5 +1,7 @@
+using System;
 using System.Diagnostics;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.UI;
 using Whisper.Utils;
 using Button = UnityEngine.UI.Button;
@@ -28,6 +30,8 @@ namespace Whisper.Samples
         public ScrollRect scroll;
         
         private string _buffer;
+
+        public Action<string> newWord;
 
         private void Awake()
         {
@@ -79,16 +83,16 @@ namespace Whisper.Samples
             if (res == null || !outputText) 
                 return;
 
-            var time = sw.ElapsedMilliseconds;
-            var rate = recordedAudio.Length / (time * 0.001f);
-            timeText.text = $"Time: {time} ms\nRate: {rate:F1}x";
+            //var time = sw.ElapsedMilliseconds;
+            //var rate = recordedAudio.Length / (time * 0.001f);
+            //timeText.text = $"Time: {time} ms\nRate: {rate:F1}x";
 
             var text = res.Result;
-            if (printLanguage)
-                text += $"\n\nLanguage: {res.Language}";
-            
+            //if (printLanguage)
+            //    text += $"\n\nLanguage: {res.Language}";
+
+            newWord?.Invoke(text);
             outputText.text = text;
-            UiUtils.ScrollDown(scroll);
         }
         
         private void OnLanguageChanged(int ind)
@@ -116,7 +120,6 @@ namespace Whisper.Samples
 
             _buffer += segment.Text;
             outputText.text = _buffer + "...";
-            UiUtils.ScrollDown(scroll);
         }
     }
 }
