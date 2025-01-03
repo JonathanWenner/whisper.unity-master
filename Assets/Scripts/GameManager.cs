@@ -171,7 +171,18 @@ public class GameManager : MonoBehaviour
     private void AttackPhaseUpdate()
     {
         
+        if (phaseTimer < 0)
+        {
+
+        }
     }
+
+    private string findAttackWord()
+    {
+
+        return " ";
+    }
+
 
     private void StartDefendPhase()
     {
