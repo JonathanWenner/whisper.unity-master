@@ -1,0 +1,73 @@
+This file contains all the command that the program understands
+
+Settings:
+	[Arduino IDE Serial Monitor]
+	Baud rate = 115200
+	Terminator = New Line
+
+	[PlatformIO Serial Monitor, add these to the .ini file]
+	monitor_speed = 115200
+	monitor_filters = send_on_enter, esp8266_exception_decoder
+
+Commands:
+
+Start Gesture Check:
+	> start MILLISECONDS
+
+	eg. start 3000 -> Starts checking for gestures for 3 seconds
+
+
+Set Server (use local IP, NOT public IP):
+	> set-server IPv4_ADDRESS
+
+	eg. set-server 192.168.178.69
+
+
+Set Port:
+	> set-port {0-65535}
+
+	eg. set-port 25565
+
+
+Set Wifi Name:
+	> set-ssid STRING
+
+	note: max 32 characters
+	eg. set-ssid eduroam
+
+
+Set Wifi Password:
+	> set-password STRING
+
+	note: max 32 characters
+	eg. set-password admin1
+
+
+Send Message over Network:
+	> send STRING
+
+	eg. send ping!
+
+
+Get stored values:
+	> view-stored-values
+
+
+Set Report Mode:
+	> set-reportmode REPORTMODE
+
+	options: serial | network | all
+
+	description: Sets where the NodeMCU sends its debug messages
+
+
+Toggle MPU data readout:
+	> toggle-mpu-readout
+
+	description: using the report mode, send out the data from the MPU6050 module
+
+
+Reset all values:
+	> reset
+
+	description: returns all the EEPROM values back to default settings, on the next bootup, you must enter all the values again

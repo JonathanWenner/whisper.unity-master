@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Xml.Serialization;
 using UnityEngine;
 
 public class Wand : MonoBehaviour
@@ -19,16 +20,18 @@ public class Wand : MonoBehaviour
 
     private void Update()
     {
-        if (isRecording)
-        {
-            DetectCurrentGesture();
-        }
+
     }
 
     
-    public void StartRecording() // function that starts recording the latest detected gesture
+    public void StartRecording(int playerNumber, float phaseTime) // function that starts recording the latest detected gesture
     {
         isRecording = true;
+
+        float time = Mathf.RoundToInt(phaseTime * 1000);
+
+        if (playerNumber == 1) TCPServer.instance.SendMessageToWand1("start " + time);
+        else TCPServer.instance.SendMessageToWand2("start " + time);
     }
     public void StopRecording() // function that stops recording the latest 
     {
@@ -53,45 +56,23 @@ public class Wand : MonoBehaviour
     }
 
 
+    // Process recieved commands
+    public void callback(string msg) {
 
-    // function that updates the latest detected gesture
-    private void DetectCurrentGesture()
-    {
-        if (DetectedRock())
-        {
-            detectedGesture = WandGestures.Rock;
+        if (isRecording) {
+
+            switch (msg) {
+                case "Right": 
+                    detectedGesture = WandGestures.Rock;
+                    break;
+                case "Down": 
+                    detectedGesture = WandGestures.Paper;
+                    break;
+                case "Left":
+                    detectedGesture = WandGestures.Scissor;
+                    break;
+
+            }
         }
-        else if (DetectedPaper())
-        {
-            detectedGesture = WandGestures.Paper;
-        }
-        else if (DetectedScissor())
-        {
-            detectedGesture = WandGestures.Scissor;
-        }
     }
-
-
-
-
-
-
-
-    //TODO Add actual wand functionality
-    private bool DetectedRock()
-    {
-        return Input.GetKey(KeyCode.R);
-    }
-    private bool DetectedPaper()
-    {
-        return Input.GetKey(KeyCode.P);
-    }
-    private bool DetectedScissor()
-    {
-        return Input.GetKey(KeyCode.S);
-    }
-
-
-
-
 }
