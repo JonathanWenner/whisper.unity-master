@@ -15,12 +15,8 @@ public class Player : MonoBehaviour
     {
         lives--;
     }
-    public int GetPlayerNumber(int playerNumber)
+    public int GetPlayerNumber()
     {
         return playerNumber;
     }
-
-
-
-
 }

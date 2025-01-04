@@ -30,9 +30,8 @@ public class GameManager : MonoBehaviour
     }
     GamePhase currentGamePhase = GamePhase.RockPaperScissor;    // variable that keeps track of the current Gamephase
 
-
-    
     GamePhase nextGamePhase;    // store phase that is planned after transition phase
+
     
     // function that starts the process of transitioning to another phase
     private void StartTransitionToPhase(GamePhase phase)
@@ -83,8 +82,8 @@ public class GameManager : MonoBehaviour
         phaseTimer = rockPaperScissorPhaseTime;
 
         // start recording gestures with the wand
-        player1.Wand.StartRecording();
-        player2.Wand.StartRecording();
+        player1.Wand.StartRecording(player1.GetPlayerNumber(), rockPaperScissorPhaseTime);
+        player2.Wand.StartRecording(player2.GetPlayerNumber(), rockPaperScissorPhaseTime);
 
         // set gamephase to rock paper scissors activating rock paper scissor 
         currentGamePhase = GamePhase.RockPaperScissor;
