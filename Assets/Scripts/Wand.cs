@@ -18,11 +18,6 @@ public class Wand : MonoBehaviour
     WandGestures detectedGesture = WandGestures.nothing;
     bool isRecording = false;
 
-    private void Update()
-    {
-
-    }
-
     
     public void StartRecording(int playerNumber, float phaseTime) // function that starts recording the latest detected gesture
     {

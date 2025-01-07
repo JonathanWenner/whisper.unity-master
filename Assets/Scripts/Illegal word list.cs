@@ -10,10 +10,7 @@ public class Illegalwordlist
     // function to add words to the illegal words list
     public void addWord(string word)
     {
-        string pattern = @"[^a-zA-Z]"; // Matches anything that's NOT a letter
-        string cleanedWord = Regex.Replace(word, pattern, ""); // Replace non-letters with an empty string
-
-        cleanedWord.ToLower(); // Convert to lowercase for consistent comparison
+        string cleanedWord = CleanWord(word);
         
         if (!string.IsNullOrWhiteSpace(cleanedWord))
         {
@@ -29,10 +26,7 @@ public class Illegalwordlist
     // function to check for illegal words in illegal word list
     public bool isInList(string word)
     {
-        string pattern = @"[^a-zA-Z]"; // Matches anything that's NOT a letter
-        string cleanedWord = Regex.Replace(word, pattern, ""); // Replace non-letters with an empty string
-
-        cleanedWord.ToLower(); // Convert to lowercase for consistent comparison
+        string cleanedWord = CleanWord(word);
 
         return illegalwordlist.Contains(cleanedWord);
     }
@@ -42,5 +36,13 @@ public class Illegalwordlist
     {
         illegalwordlist.Clear();
         Debug.Log("list is empty");
+    }
+
+    public string CleanWord(string word)
+    {
+        string pattern = @"[^a-zA-Z]"; // Matches anything that's NOT a letter
+        string cleanedWord = Regex.Replace(word, pattern, ""); // Replace non-letters with an empty string
+
+        return cleanedWord.ToLower(); // Convert to lowercase for consistent comparison
     }
 }

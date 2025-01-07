@@ -19,4 +19,8 @@ public class Player : MonoBehaviour
     {
         return playerNumber;
     }
+    public int GetLives()
+    {
+        return lives;
+    }
 }
