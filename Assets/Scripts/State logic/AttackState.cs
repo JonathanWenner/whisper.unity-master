@@ -23,6 +23,17 @@ public class AttackState : IState
 
     public void Start()
     {
+        if (attacker == stateManager.player1)
+        {
+            Actions.playerOneAttack(true);
+            Actions.playerTwoAttack(false);
+        }
+        else
+        {
+            Actions.playerTwoAttack(true);
+            Actions.playerOneAttack(false);
+        }
+
         attacker.SpeechRecognitionController.Click();
         stateManager.StartCoroutine(WaitForWord()); // start the state with a couroutine
         stateManager.setLastSayedWord(""); // reset last sayed word to nothing
@@ -36,6 +47,7 @@ public class AttackState : IState
 
     public void Exit()
     {
+
         stateManager.setLastSayedWord(answerdWord); 
     }
 
@@ -92,12 +104,35 @@ public class AttackState : IState
 
         if (string.IsNullOrEmpty(answerdWord) || stateManager.Illegalwordlist.isInList(answerdWord)) // if a already used word is given or no word is given then damage player check for ending and go back to rock paper siscor
         {
+            //unsuccesfull attack
+
+            if (attacker == stateManager.player1)
+            {
+                Actions.playerOneAttackSuccessful(false);
+            }
+            else
+            {
+                Actions.playerTwoAttackSuccessful(false);
+            }
+
+
             attacker.DamagePlayer();
             stateManager.CheckForWinner();
             stateManager.TransitionToNextState(true);
         }
         else // if a corrrect word is give
         {
+            // succesfull attack
+
+            if (attacker == stateManager.player1)
+            {
+                Actions.playerOneAttackSuccessful(true);
+            }
+            else
+            {
+                Actions.playerTwoAttackSuccessful(true);
+            }
+
             stateManager.setLastSayedWord(stateManager.Illegalwordlist.CleanWord(answerdWord)); // cleanword and change last set word into it
             stateManager.SwitchPlayerTurn();                                                    // switch the player turn
             stateManager.Illegalwordlist.addWord(answerdWord);                                  // add word to illegal word list

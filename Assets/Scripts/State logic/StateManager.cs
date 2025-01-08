@@ -34,7 +34,6 @@ public class StateManager : MonoBehaviour
 
 
 
-
     private void Start()
     {
         stateFactory = new StateFactory(this);
@@ -146,12 +145,17 @@ public class StateManager : MonoBehaviour
         else if (player == player2)
         {
             isPlayerOneTurn = false;
-        }    
+        }
+
+        Actions.playerOneTurn(isPlayerOneTurn);
+
     }
     
     public void SwitchPlayerTurn()
     {
         isPlayerOneTurn = !isPlayerOneTurn;
+
+        Actions.playerOneTurn(isPlayerOneTurn);
     }
     public string getLastSayedWord()
     {
