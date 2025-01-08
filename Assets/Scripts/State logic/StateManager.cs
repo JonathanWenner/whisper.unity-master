@@ -2,17 +2,23 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Security.Cryptography;
+using System.Text.RegularExpressions;
+using TMPro;
 using UnityEditor.ShaderGraph.Internal;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class StateManager : MonoBehaviour
 {
+    [SerializeField] public UIhandler uiHandler;
+    [SerializeField] public SmokeyMirror smokeyMirror;
+
     private IState currentState;
     private GameType currrentGameMode;
     public int currentStateIndex = 0;
-    
-    public Player player1;
-    public Player player2;
+
+    [SerializeField] public Player player1;
+    [SerializeField] public Player player2;
 
     public Illegalwordlist Illegalwordlist = new Illegalwordlist();
     public StateFactory stateFactory;
@@ -20,34 +26,56 @@ public class StateManager : MonoBehaviour
     string lastSayedWord;
     bool isPlayerOneTurn = true;
 
-    [SerializeField] float transitionTime = 2f;
+    [SerializeField] float transitionTime = 1f;
+
+    public List<string> ICastList = new List<string> { "I cast", "I cost", "I caused", "I cross", "I crossed", "I call"};
+    public bool gotWord = false;
+    public string gottenWord = "";
+
+
 
 
     private void Start()
     {
         stateFactory = new StateFactory(this);
+        SetGameMode(GameType.MultiChane());
     }
+
+
 
     public void SetGameMode(GameType gameType)
     {
         currrentGameMode = gameType;
         currentStateIndex = 0;
+        currentState = stateFactory.createState(gameType.StateSequence[currentStateIndex]);
+        currentState.Start();
     }
 
-    public void TransitionToNextState(object parameter)
+    public void TransitionToNextState(bool reset = false)
     {
-        if (currentStateIndex < currrentGameMode.StateSequence.Count)
+        Debug.Log("started standerd state transition");
+        if (reset)
         {
+            currentStateIndex = 0;
             System.Type nextStateType = currrentGameMode.StateSequence[currentStateIndex];
             IState nextState = stateFactory.createState(nextStateType);
+            StartCoroutine(TransitionToState(nextState));
+        }
+        else if (currentStateIndex < currrentGameMode.StateSequence.Count - 1)
+        {
+            System.Type nextStateType = currrentGameMode.StateSequence[currentStateIndex+1];
+            IState nextState = stateFactory.createState(nextStateType);
+            Debug.Log("standerd transition to: " + nextState.ToString());
             currentStateIndex++;
-            TransitionToState(nextState);
-            
+            StartCoroutine(TransitionToState(nextState));
         }
         else
         {
+            Debug.Log("end of standerd transition sequence reachde resetting to beginning");
             currentStateIndex = currrentGameMode.loopingPoint;
-            TransitionToNextState(parameter);
+            System.Type nextStateType = currrentGameMode.StateSequence[currentStateIndex];
+            IState nextState = stateFactory.createState(nextStateType);
+            StartCoroutine(TransitionToState(nextState));
         }
     }
 
@@ -57,25 +85,31 @@ public class StateManager : MonoBehaviour
         // start the new state
         currentState = newState;
         currentState.Start();
+        Debug.Log("start next state: " + newState.ToString());
     }
 
-    public IEnumerable TransitionToState(IState newState, bool reset = false)
+    public IEnumerator TransitionToState(IState newState, bool reset = false)
     {
         // leave the current state if it exists
         currentState?.Exit();
+        Debug.Log("exit current state");
 
         yield return new WaitForSeconds(transitionTime);
+        Debug.Log("waited for transition to next state");
 
         if (reset)
         {
-            currentStateIndex = 1;
+            currentStateIndex = 0;
         }
+
         SetState(newState);
     }
 
     private void Update()
     {
         currentState?.Update();
+        uiHandler.livesDrawLives(player1.GetLives(), player2.GetLives());
+        uiHandler.showCurrentPhase((currentState.GetType()));
     }
 
     public void CheckForWinner()
@@ -127,6 +161,38 @@ public class StateManager : MonoBehaviour
     {
         lastSayedWord = word;
     }
+
+    public string FilterAnswerSentance(string sentence)
+    {
+        foreach (var phrase in ICastList)
+        {
+            // Create a regex pattern to find the phrase and a word after it
+            string pattern = $@"\b{Regex.Escape(phrase)}\b\s+(\w+)?";
+            Match match = Regex.Match(sentence, pattern, RegexOptions.IgnoreCase);
+
+            if (match.Success)
+            {
+                // If a word is found after the phrase, return it
+                if (match.Groups[1].Success)
+                {
+                    return match.Groups[1].Value;
+                }
+                else
+                {
+                    // No word after the phrase
+                    return "";
+                }
+            }
+        }
+        return "";
+    }
+
+
+    public void GetWord(string word)
+    {
+        gotWord = true;
+        gottenWord = word;
+    }
 }
 
 
@@ -144,21 +210,27 @@ public class StateFactory
     {
         if (stateType == typeof(RPSState))
         {
+            Debug.Log("creat rpsState in factory");
             return new RPSState(stateManager);
         }
 
         if (stateType == typeof(AttackState))
         {
-            return new RPSState(stateManager);
+            Debug.Log("creat AttackState in factory");
+            return new AttackState(stateManager);
         }
 
         if (stateType == typeof(DefendState))
         {
-            return new RPSState(stateManager);
+            Debug.Log("creat AttackState in factory");
+            return new DefendState(stateManager);
         }
 
         throw new Exception("incorrect state given");
     }
+
+
+
 }
 
 public class GameType

@@ -25,18 +25,21 @@ public class RPSState : IState
 
     public void Start()
     {
+        Debug.Log("rock paper siscors has started");
+
         player1Gesture = Wand.WandGestures.nothing;
         player2Gesture = Wand.WandGestures.nothing;
 
-        player1.Wand.StartRecording(player1.GetPlayerNumber(), StateTime);
-        player2.Wand.StartRecording(player2.GetPlayerNumber(), StateTime);
+        //player1.Wand.StartRecording(player1.GetPlayerNumber(), StateTime);
+        //player2.Wand.StartRecording(player2.GetPlayerNumber(), StateTime);
 
         stateManager.StartCoroutine(WaitForChoices());
     }
 
     public void Update()
     {
-
+        timer -= Time.deltaTime;
+        stateManager.uiHandler.drawTimer(timer);
     }
 
     public void Exit()
@@ -49,7 +52,6 @@ public class RPSState : IState
         timer = StateTime;
         while (timer > 0)
         {
-            timer -= Time.deltaTime;
             yield return null;
 
 
@@ -59,11 +61,12 @@ public class RPSState : IState
             if (Input.GetKeyDown(KeyCode.S))
                 player2Gesture = Wand.WandGestures.Paper;
             //Wand.WandGestures foundGestureP1 = player1.Wand.GetDetectedGesture();
-            //Wand.WandGestures foundGestureP2 = player2.Wand.GetDetectedGesture();
+           // Wand.WandGestures foundGestureP2 = player2.Wand.GetDetectedGesture();
 
 
             if (player1Gesture != Wand.WandGestures.nothing && player2Gesture != Wand.WandGestures.nothing)
             {
+                Debug.Log("both players chose rock paper or siscor");
                 break;
             }
         }
@@ -109,16 +112,19 @@ public class RPSState : IState
 
     private void Player1WinsRPS()
     {
+        Debug.Log("player 1 wins rock paper siscor");
         stateManager.SetPlayerTurn(player1);
-        stateManager.TransitionToNextState(stateManager);
+        stateManager.TransitionToNextState();
     }
     private void Player2WinsRPS()
     {
+        Debug.Log("player 2 wins rock paper siscor");
         stateManager.SetPlayerTurn(player2);
-        stateManager.TransitionToNextState(stateManager);
+        stateManager.TransitionToNextState();
     }
     private void TieRPS()
     {
-        stateManager.TransitionToState(stateManager.stateFactory.createState(typeof(RPSState)), true);
+        Debug.Log("rock paper siscor is a tie");
+        stateManager.TransitionToNextState(true);
     }
 }

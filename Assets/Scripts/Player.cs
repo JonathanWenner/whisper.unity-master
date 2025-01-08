@@ -8,8 +8,8 @@ public class Player : MonoBehaviour
     [SerializeField] int lives = 3;
     [SerializeField] int playerNumber = 1;
 
-    public Wand Wand;
-    public VoiceRecognition VoiceRecognition;
+    //public Wand Wand;
+    public SpeechRecognitionController SpeechRecognitionController;
 
     public void DamagePlayer(int damage = 1)
     {
