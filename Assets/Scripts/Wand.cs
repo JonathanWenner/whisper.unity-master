@@ -21,6 +21,7 @@ public class Wand : MonoBehaviour
     
     public void StartRecording(int playerNumber, float phaseTime) // function that starts recording the latest detected gesture
     {
+        if (TCPServer.instance == null) return;
         isRecording = true;
 
         float time = Mathf.RoundToInt(phaseTime * 1000);
@@ -57,7 +58,7 @@ public class Wand : MonoBehaviour
         if (isRecording) {
 
             switch (msg) {
-                case "Right": 
+                case "Right":
                     detectedGesture = WandGestures.Rock;
                     break;
                 case "Down": 

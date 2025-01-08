@@ -9,8 +9,7 @@ public class DefendState : IState
     private StateManager stateManager;
     private Player defender;
 
-    private float stateTime = 5f;
-    private float timer;
+    private float stateTime = GameSettings.DefendStateTime;
 
     private string answerdWord;
 
@@ -38,8 +37,8 @@ public class DefendState : IState
 
     public void Update()
     {
-        stateManager.uiHandler.drawTimer(timer);
-        timer -= Time.deltaTime;
+        stateManager.uiHandler.drawTimer(stateManager.timer);
+        stateManager.timer -= Time.deltaTime;
     }
 
     public void Exit()
@@ -50,10 +49,10 @@ public class DefendState : IState
 
     private IEnumerator WaitForWord()
     {
-        timer = stateTime;
+        stateManager.timer = stateTime;
         answerdWord = "";
 
-        while (timer > 0)
+        while (stateManager.timer > 0)
         {
 
             yield return null;
