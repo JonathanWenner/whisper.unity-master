@@ -101,11 +101,11 @@ public class DefendState : IState
 
             if (defender == stateManager.player1)
             {
-                Actions.playerOneDefendSuccessful(false);
+                Actions.playerOneDefendSuccessful?.Invoke();
             }
             else
             {
-                Actions.playerTwoDefendSuccessful(false);
+                Actions.playerTwoDefendSuccessful?.Invoke();
             }
 
             Debug.Log("wrong word back to rps: " + answerdWord);
@@ -117,11 +117,11 @@ public class DefendState : IState
         {
             if (defender == stateManager.player1)
             {
-                Actions.playerOneDefendSuccessful(true);
+                Actions.playerOneDefendSuccessful?.Invoke();
             }
             else
             {
-                Actions.playerTwoDefendSuccessful(true);
+                Actions.playerTwoDefendSuccessful?.Invoke();
             }
 
             Debug.Log("correct word");

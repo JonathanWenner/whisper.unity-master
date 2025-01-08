@@ -27,6 +27,7 @@ public class AttackState : IState
         {
             Actions.playerOneAttack(true);
             Actions.playerTwoAttack(false);
+
         }
         else
         {
@@ -108,11 +109,11 @@ public class AttackState : IState
 
             if (attacker == stateManager.player1)
             {
-                Actions.playerOneAttackSuccessful(false);
+                Actions.playerOneAttackSuccessful?.Invoke();
             }
             else
             {
-                Actions.playerTwoAttackSuccessful(false);
+                Actions.playerTwoAttackSuccessful?.Invoke();
             }
 
 
@@ -126,11 +127,11 @@ public class AttackState : IState
 
             if (attacker == stateManager.player1)
             {
-                Actions.playerOneAttackSuccessful(true);
+                Actions.playerOneAttackSuccessful?.Invoke();
             }
             else
             {
-                Actions.playerTwoAttackSuccessful(true);
+                Actions.playerTwoAttackSuccessful?.Invoke();
             }
 
             stateManager.setLastSayedWord(stateManager.Illegalwordlist.CleanWord(answerdWord)); // cleanword and change last set word into it

@@ -17,11 +17,11 @@ public static class Actions
 
         // Attack
         public static Action<bool> playerOneAttack;
-        public static Action<bool> playerOneAttackSuccessful;
+        public static Action playerOneAttackSuccessful;
 
         // Defend
         public static Action<bool> playerOneDefend;
-        public static Action<bool> playerOneDefendSuccessful;
+        public static Action playerOneDefendSuccessful;
 
     //________________________________________________________
 
@@ -30,11 +30,11 @@ public static class Actions
 
         // Attack
         public static Action<bool> playerTwoAttack;
-        public static Action<bool> playerTwoAttackSuccessful;
+        public static Action playerTwoAttackSuccessful;
 
         // Defend
         public static Action<bool> playerTwoDefend;
-        public static Action<bool> playerTwoDefendSuccessful;
+        public static Action playerTwoDefendSuccessful;
 
 
 }
