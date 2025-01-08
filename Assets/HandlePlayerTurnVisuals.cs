@@ -17,13 +17,23 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
     private void OnEnable()
     {
         Actions.playerOneTurn += EnablePlayerTurnVisuals;
+
+        // Attack
         Actions.playerOneAttack += StartAttackTimerPlayerOne;
         Actions.playerTwoAttack += StartAttackTimerPlayerTwo;
+
+        // Defend
+        Actions.playerOneDefend += StartAttackTimerPlayerOne;
     }
 
     private void OnDisable()
     {
         Actions.playerOneTurn -= EnablePlayerTurnVisuals;
+    }
+
+    private void StartDefending(bool isPlayerOne)
+    {
+        
     }
 
     private void EnablePlayerTurnVisuals(bool isPlayerOne)
@@ -39,13 +49,15 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
 
     public void StartAttackTimerPlayerOne(bool isPlayerOne)
     {
-        timer = 5f;
+        GameSettings.AttackStateTime = timer;
+        GameSettings.AttackStateTime = playerOneAttackTimer.maxValue;
         isPlayerOneTurn = isPlayerOne;
     }
 
     private void StartAttackTimerPlayerTwo(bool isPlayerTwo)
     {
-        timer = 5f;
+        GameSettings.AttackStateTime = timer;
+        GameSettings.AttackStateTime = playerTwoAttackTimer.maxValue;
         isPlayerTwoTurn = true;
     }
 
