@@ -143,7 +143,7 @@ public class TCPServer : MonoBehaviour
         SendMessageToClient(stream2, message);
     }
 
-    public void SendMessageToClient(NetworkStream stream, string message) {x
+    public void SendMessageToClient(NetworkStream stream, string message) {
         byte[] msg = Encoding.UTF8.GetBytes(message);
         stream.Write(msg, 0, msg.Length);
         Log("Sent: " + message);
