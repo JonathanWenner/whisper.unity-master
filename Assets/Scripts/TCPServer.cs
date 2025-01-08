@@ -131,15 +131,19 @@ public class TCPServer : MonoBehaviour
         SendMessageToClient(stream2, message);
     }
 
-    public void SendMessageToWand1(string message) {
+    public void SendMessageToWand1(string message)
+    {
+        if (!WandClient1.Connected) return;
         SendMessageToClient(stream1, message);
     }
 
-    public void SendMessageToWand2(string message) {
+    public void SendMessageToWand2(string message)
+    {
+        if (!WandClient2.Connected) return;
         SendMessageToClient(stream2, message);
     }
 
-    public void SendMessageToClient(NetworkStream stream, string message) {
+    public void SendMessageToClient(NetworkStream stream, string message) {x
         byte[] msg = Encoding.UTF8.GetBytes(message);
         stream.Write(msg, 0, msg.Length);
         Log("Sent: " + message);
