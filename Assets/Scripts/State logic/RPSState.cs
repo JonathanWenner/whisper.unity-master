@@ -9,8 +9,7 @@ public class RPSState : IState
     private StateManager stateManager;
     private Player player1;
     private Player player2;
-    private float StateTime = 4f;
-    private float timer;
+    private float StateTime = GameSettings.RPSStateTime;
 
 
     public RPSState(StateManager stateManager)
@@ -30,6 +29,7 @@ public class RPSState : IState
         player1Gesture = Wand.WandGestures.nothing;
         player2Gesture = Wand.WandGestures.nothing;
 
+        //ACTIVATE WITH WANTS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         //player1.Wand.StartRecording(player1.GetPlayerNumber(), StateTime);
         //player2.Wand.StartRecording(player2.GetPlayerNumber(), StateTime);
 
@@ -38,8 +38,8 @@ public class RPSState : IState
 
     public void Update()
     {
-        timer -= Time.deltaTime;
-        stateManager.uiHandler.drawTimer(timer);
+        stateManager.timer -= Time.deltaTime;
+        stateManager.uiHandler.drawTimer(stateManager.timer);
     }
 
     public void Exit()
@@ -49,19 +49,20 @@ public class RPSState : IState
 
     private IEnumerator WaitForChoices()
     {
-        timer = StateTime;
-        while (timer > 0)
+        stateManager.timer = StateTime;
+        while (stateManager.timer > 0)
         {
             yield return null;
 
 
             //CHANGE BACK!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            if (Input.GetKeyDown(KeyCode.A))
-                player1Gesture = Wand.WandGestures.Rock;
+
             if (Input.GetKeyDown(KeyCode.S))
                 player2Gesture = Wand.WandGestures.Paper;
-            //Wand.WandGestures foundGestureP1 = player1.Wand.GetDetectedGesture();
-           // Wand.WandGestures foundGestureP2 = player2.Wand.GetDetectedGesture();
+
+
+            // player1Gesture = player1.Wand.GetDetectedGesture();
+            // player2Gesture = player2.Wand.GetDetectedGesture();
 
 
             if (player1Gesture != Wand.WandGestures.nothing && player2Gesture != Wand.WandGestures.nothing)

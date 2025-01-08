@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
+using System.Threading;
 using TMPro;
 using UnityEditor.ShaderGraph.Internal;
 using UnityEngine;
@@ -26,13 +27,13 @@ public class StateManager : MonoBehaviour
     string lastSayedWord;
     bool isPlayerOneTurn = true;
 
-    [SerializeField] float transitionTime = 1f;
+    float transitionTime = GameSettings.TransitionTime;
 
     public List<string> ICastList = new List<string> { "I cast", "I cost", "I caused", "I cross", "I crossed", "I call"};
     public bool gotWord = false;
     public string gottenWord = "";
 
-
+    public float timer;
 
 
     private void Start()
