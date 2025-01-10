@@ -41,6 +41,10 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
     [SerializeField] Animator PlayerTwoLoseLife;
 
 
+    [Header("Environmental Effects")]
+    [SerializeField] ParticleSystem DustFromImpact;
+
+
 
     private void Start()
     {
@@ -286,6 +290,8 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
                 IceImpact.Play();
                 FrostAnimator.SetTrigger("Frost");
             }
+
+            DustFromImpact.Play();
 
             PlayerLosesLife();
 
