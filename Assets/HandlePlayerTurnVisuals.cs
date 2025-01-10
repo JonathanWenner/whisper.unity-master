@@ -12,9 +12,16 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
     [SerializeField] CameraShake cameraShake;
 
     [Header("Player Turn Visuals")]
+    [Header("Player one")]
     [SerializeField] GameObject playerOneTurnVisuals;
+    [SerializeField] CanvasGroup playerOnePortrait;
+    [SerializeField] Animator playerOnePortraitAnimator;
+    [Header("Player Two")]
     [SerializeField] GameObject playerTwoTurnVisuals;
+    [SerializeField] CanvasGroup playerTwoPortrait;
+    [SerializeField] Animator playerTwoPortraitAnimator;
 
+    [Header("Player Components")]
 
     [Header("Player 1")]
     [SerializeField] ParticleSystem SpellActivation;
@@ -54,6 +61,13 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
         playerOneLife.text = "3";
         playerTwoLife.text = "3";
 
+    }
+
+    public void TestChangePlayerTurn()
+    {
+        _isPlayerOne = !_isPlayerOne;
+
+        EnablePlayerTurnVisuals(_isPlayerOne);
     }
 
     private void OnEnable()
@@ -184,6 +198,19 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
         playerTwoTurnVisuals.SetActive(!isPlayerOne);
 
         _isPlayerOne = isPlayerOne;
+
+        if (isPlayerOne)
+        {
+            playerOnePortraitAnimator.Play("PlayerSelected");
+            playerOnePortrait.alpha = 1;
+            playerTwoPortrait.alpha = 0.5f;
+        }
+        else
+        {
+            playerTwoPortraitAnimator.Play("PlayerSelected");
+            playerOnePortrait.alpha = 0.5f;
+            playerTwoPortrait.alpha = 1;
+        }
     }
 
 
