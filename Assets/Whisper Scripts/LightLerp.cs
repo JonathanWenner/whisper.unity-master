@@ -13,6 +13,10 @@ public class LightLerp : MonoBehaviour
 
     void Start()
     {
+        float randomStartTimer = Random.Range(0f, 1f); // Randomize the start time for each light
+        
+        StartCoroutine(RandomStart()); // Start the coroutine to randomize the start time
+
         if (targetLight == null)
         {
             targetLight = GetComponent<Light>(); // Automatically find the light if not assigned
@@ -22,16 +26,27 @@ public class LightLerp : MonoBehaviour
         initialIntensity = targetLight.intensity;
     }
 
+    private bool StartLightLerp = false;
     void Update()
     {
-        // PingPong between 0 and 1 over time and use it to lerp between the initial and target intensities
-        float t = Mathf.PingPong(Time.time * lerpSpeed, 1f);
-        targetLight.intensity = Mathf.Lerp(initialIntensity, targetIntensity, t);
+        if (StartLightLerp)
+        {
+            // PingPong between 0 and 1 over time and use it to lerp between the initial and target intensities
+            float t = Mathf.PingPong(Time.time * lerpSpeed, 1f);
+            targetLight.intensity = Mathf.Lerp(initialIntensity, targetIntensity, t);
+        }
+
     }
 
     // Optional method to reset to the initial intensity
     public void ResetIntensity()
     {
         targetIntensity = initialIntensity;
+    }
+
+    private IEnumerator RandomStart()
+    {
+        yield return new WaitForSeconds(Random.Range(0f, 1.5f));
+        StartLightLerp = true;
     }
 }

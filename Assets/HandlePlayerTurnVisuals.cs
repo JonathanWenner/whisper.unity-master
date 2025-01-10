@@ -8,6 +8,8 @@ using UnityEngine.UI;
 public class HandlePlayerTurnVisuals : MonoBehaviour
 {
 
+    [SerializeField] CameraShake cameraShake;
+
     [Header("Player Turn Visuals")]
     [SerializeField] GameObject playerOneTurnVisuals;
     [SerializeField] GameObject playerTwoTurnVisuals;
@@ -18,6 +20,7 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
     [SerializeField] ParticleSystem FireBolt;
     [SerializeField] GameObject ActivationCircle;
     [SerializeField] Image SpellActivationCircle;
+    [SerializeField] ParticleSystem ExplosionImpact;
 
     [Header("Player 2")]
     [SerializeField] ParticleSystem SpellActivation2;
@@ -144,6 +147,8 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
         // Destroy the projectile after reaching the target
         if (projectile != null)
         {
+            cameraShake.ShakeCamera();
+            ExplosionImpact.Play();
             Destroy(projectile);
         }
     }
@@ -257,11 +262,13 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
                     if (isPlayerOne)
                     {
                         SpellActivation.Play();
+                        yield return new WaitForSeconds(0.5f);
                         FireProjectile(true);
                     }
                     else
                     {
                         SpellActivation2.Play();
+                        yield return new WaitForSeconds(0.5f);
                         FireProjectile(false);
                     }
 
