@@ -12,29 +12,21 @@ public static class Actions
     public static Action<bool> isGesturePhase;
 
 
-    // Player one 
+    // Determine Player turn
     public static Action<bool> playerOneTurn;
 
-        // Attack
-        public static Action<bool> playerOneAttack;
-        public static Action playerOneAttackSuccessful;
+    //defend
+    public static Action StartDefend;
+    public static Action<bool> DefendOutcome;
+    public static Action EndDefend;
 
-        // Defend
-        public static Action<bool> playerOneDefend;
-        public static Action playerOneDefendSuccessful;
+    //attack
+    public static Action StartAttack;
+    public static Action<bool> AttackOutcome;
+    public static Action EndAttack;
 
-    //________________________________________________________
-
-    // Player two
-    public static Action<bool> playerTwoTurn;
-
-        // Attack
-        public static Action<bool> playerTwoAttack;
-        public static Action playerTwoAttackSuccessful;
-
-        // Defend
-        public static Action<bool> playerTwoDefend;
-        public static Action playerTwoDefendSuccessful;
+    // player lose life
+    public static Action PlayerLoseLife;
 
 
 }

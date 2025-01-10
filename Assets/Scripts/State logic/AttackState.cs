@@ -22,17 +22,7 @@ public class AttackState : IState
 
     public void Start()
     {
-        if (attacker == stateManager.player1)
-        {
-            Actions.playerOneAttack(true);
-            Actions.playerTwoAttack(false);
-
-        }
-        else
-        {
-            Actions.playerTwoAttack(true);
-            Actions.playerOneAttack(false);
-        }
+        Actions.StartAttack?.Invoke();
 
         attacker.SpeechRecognitionController.Click();
         stateManager.StartCoroutine(WaitForWord()); // start the state with a couroutine
@@ -104,32 +94,23 @@ public class AttackState : IState
         {
             //unsuccesfull attack
 
-            if (attacker == stateManager.player1)
-            {
-                Actions.playerOneAttackSuccessful?.Invoke();
-            }
-            else
-            {
-                Actions.playerTwoAttackSuccessful?.Invoke();
-            }
+            Actions.AttackOutcome(false);
+
+            Actions.EndAttack?.Invoke();
 
 
             attacker.DamagePlayer();
             stateManager.CheckForWinner();
             stateManager.TransitionToNextState(true);
+
         }
         else // if a corrrect word is give
         {
             // succesfull attack
 
-            if (attacker == stateManager.player1)
-            {
-                Actions.playerOneAttackSuccessful?.Invoke();
-            }
-            else
-            {
-                Actions.playerTwoAttackSuccessful?.Invoke();
-            }
+            Actions.AttackOutcome(true);
+
+            Actions.EndAttack?.Invoke();
 
             stateManager.setLastSayedWord(stateManager.Illegalwordlist.CleanWord(answerdWord)); // cleanword and change last set word into it
             stateManager.SwitchPlayerTurn();                                                    // switch the player turn

@@ -22,14 +22,7 @@ public class DefendState : IState
 
     public void Start()
     {
-        if (defender == stateManager.player1)
-        {
-            Actions.playerOneDefend(true);
-        }
-        else
-        {
-            Actions.playerTwoDefend(true);
-        }
+        Actions.StartDefend?.Invoke();
 
         defender.SpeechRecognitionController.Click();
         stateManager.StartCoroutine(WaitForWord());
@@ -98,14 +91,9 @@ public class DefendState : IState
         {
             // unsuccesfull defend
 
-            if (defender == stateManager.player1)
-            {
-                Actions.playerOneDefendSuccessful?.Invoke();
-            }
-            else
-            {
-                Actions.playerTwoDefendSuccessful?.Invoke();
-            }
+           Actions.DefendOutcome(false);
+
+            Actions.EndDefend?.Invoke();
 
             Debug.Log("wrong word back to rps: " + answerdWord);
             defender.DamagePlayer();
@@ -114,14 +102,9 @@ public class DefendState : IState
         }
         else
         {
-            if (defender == stateManager.player1)
-            {
-                Actions.playerOneDefendSuccessful?.Invoke();
-            }
-            else
-            {
-                Actions.playerTwoDefendSuccessful?.Invoke();
-            }
+            Actions.DefendOutcome(true);
+
+            Actions.EndDefend?.Invoke();
 
             Debug.Log("correct word");
             stateManager.setLastSayedWord(stateManager.Illegalwordlist.CleanWord(answerdWord));

@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.UI;
@@ -21,48 +22,155 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
     [SerializeField] GameObject ActivationCircle;
     [SerializeField] Image SpellActivationCircle;
     [SerializeField] ParticleSystem ExplosionImpact;
+    [SerializeField] Animator FireAnimator;
+
+    // life 
+    [SerializeField] TextMeshProUGUI playerOneLife;
+    [SerializeField] Animator PlayerOneLoseLife;
 
     [Header("Player 2")]
     [SerializeField] ParticleSystem SpellActivation2;
     [SerializeField] ParticleSystem FrostBolt2;
     [SerializeField] GameObject ActivationCircle1;
     [SerializeField] Image SpellActivationCircle1;
+    [SerializeField] ParticleSystem IceImpact;
+    [SerializeField] Animator FrostAnimator;
 
-    [SerializeField] Slider playerOneAttackTimer;
-    [SerializeField] Slider playerTwoAttackTimer;
+    // life 
+    [SerializeField] TextMeshProUGUI playerTwoLife;
+    [SerializeField] Animator PlayerTwoLoseLife;
+
 
 
     private void Start()
     {
         OriginalColor = ActivationCircle.GetComponent<SpriteRenderer>().color;
         OriginalColor1 = ActivationCircle1.GetComponent<SpriteRenderer>().color;
+
+        playerOneLife.text = "3";
+        playerTwoLife.text = "3";
+
     }
 
     private void OnEnable()
     {
         Actions.playerOneTurn += EnablePlayerTurnVisuals;
 
-        // Attack
-        Actions.playerOneAttack += StartAttackTimerPlayerOne;
-        Actions.playerTwoAttack += StartAttackTimerPlayerTwo;
-
-        // Attack sucessful
-        Actions.playerOneAttackSuccessful += StartAttackSucessful;
-        Actions.playerTwoAttackSuccessful += StartAttackSucessful;
-
         // Defend
-        Actions.playerOneDefend += StartAttackTimerPlayerOne;
+        Actions.StartDefend += InitializeDefend;
+        Actions.DefendOutcome += SetDefendingOutcome;
+        //Actions.EndDefend += InitializeDefend;
+
+        // Attack
+        //Actions.StartAttack += InitializeAttack;
+        Actions.AttackOutcome += SetAttackOutcome;
+        Actions.EndAttack += InitializeAttack;
+
+        Actions.PlayerLoseLife += PlayerLosesLife;
+
     }
 
     private void OnDisable()
     {
         Actions.playerOneTurn -= EnablePlayerTurnVisuals;
+
+        // Defend
+        Actions.StartDefend -= InitializeDefend;
+        Actions.DefendOutcome -= SetDefendingOutcome;
+        //Actions.EndDefend -= InitializeDefend;
+
+        Actions.StartAttack -= InitializeAttack;
+        Actions.AttackOutcome -= SetAttackOutcome;
+        Actions.EndAttack -= InitializeAttack;
+
+        Actions.PlayerLoseLife -= PlayerLosesLife;
+
+
     }
 
-    private void StartDefending(bool isPlayerOne)
+    private bool AttackSucessful = false;
+    private bool DefendSucessful = false;
+
+    private void SetDefendingOutcome(bool Success)
     {
-        
+        DefendSucessful = Success;
     }
+ 
+    private void SetAttackOutcome(bool Sucess)
+    {
+        AttackSucessful = Sucess;
+    }
+
+    private void InitializeDefend()
+    {
+        Debug.Log("Defend Sucessful: " + DefendSucessful);
+        Debug.Log("player" + (!_isPlayerOne ? "One" : "Two") + " Defended");
+
+        if (DefendSucessful)
+        {
+            StartAttackSucessful();
+        }
+        else
+        {
+            Debug.Log("Unsuccesful Defend");
+        }
+
+
+    }
+
+    private void InitializeAttack()
+    {
+        Debug.Log("Attack Sucessful: " + AttackSucessful);
+        Debug.Log("player" + (_isPlayerOne ? "One" : "Two") + " Attacked");
+
+        if (AttackSucessful)
+        {
+            StartAttackSucessful();
+        }
+        else
+        { 
+            Debug.Log("Unsuccesful Attack");
+        }
+
+    }
+
+    private int _PlayerOneLife = 3;
+    private int _PlayerTwoLife = 3;
+
+    public void PlayerLosesLife()
+    { 
+        if (_isPlayerOne)
+        {
+            PlayerOneLoseLife.Play("PlayerOneLoseLife");
+
+            if (_PlayerOneLife > 0)
+            {
+                _PlayerOneLife--;
+            }
+            else
+            {
+                // Player 1 lost
+            }
+
+            playerOneLife.text = _PlayerOneLife.ToString();
+        }
+        else
+        {
+            PlayerTwoLoseLife.Play("PlayerOneLoseLife");
+
+            if (_PlayerTwoLife > 0)
+            {
+                _PlayerTwoLife--;
+            }
+            else
+            {
+                // Player 2 lost
+            }
+
+            playerTwoLife.text = _PlayerTwoLife.ToString();
+        }
+    }
+
 
     public bool _isPlayerOne = false;
 
@@ -79,19 +187,19 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
     private bool isPlayerOneTurn = false;
     private bool isPlayerTwoTurn = false;
 
-    public void StartAttackTimerPlayerOne(bool isPlayerOne)
-    {
-        GameSettings.AttackStateTime = timer;
-        GameSettings.AttackStateTime = playerOneAttackTimer.maxValue;
-        isPlayerOneTurn = isPlayerOne;
-    }
+    //public void StartAttackTimerPlayerOne(bool isPlayerOne)
+    //{
+    //    GameSettings.AttackStateTime = timer;
+    //    GameSettings.AttackStateTime = playerOneAttackTimer.maxValue;
+    //    isPlayerOneTurn = isPlayerOne;
+    //}
 
-    private void StartAttackTimerPlayerTwo(bool isPlayerTwo)
-    {
-        GameSettings.AttackStateTime = timer;
-        GameSettings.AttackStateTime = playerTwoAttackTimer.maxValue;
-        isPlayerTwoTurn = true;
-    }
+    //private void StartAttackTimerPlayerTwo(bool isPlayerTwo)
+    //{
+    //    GameSettings.AttackStateTime = timer;
+    //    GameSettings.AttackStateTime = playerTwoAttackTimer.maxValue;
+    //    isPlayerTwoTurn = true;
+    //}
 
     private void FireProjectile(bool isPlayerOne)
     {
@@ -110,30 +218,48 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
     [SerializeField] private Transform FireBoltTarget;
     [SerializeField] private float FireBoltSpeed = 5f;
 
+    [Header("Projectile speed")]
+    [SerializeField]
+    private AnimationCurve speedCurve; // Define the curve in Unity Inspector to control speed over time
+    [SerializeField]
+    private float flightDuration = 1f; // Total duration for the projectile's flight
+
+
+    // Losing life Unsuccesful attack or unsuccesful defense
+
+
+
+
     private IEnumerator FireProjectileCoroutine(bool isPlayerOne)
     {
         // Select the correct prefab, spawn point, target, and speed based on the player
         GameObject projectilePrefab = isPlayerOne ? FireBoltPrefab : FrostBoltPrefab;
         Transform spawnPoint = isPlayerOne ? FireBoltSpawnPoint : FrostBoltSpawnPoint;
         Transform target = isPlayerOne ? FireBoltTarget : FrostBoltTarget;
-        float projectileSpeed = isPlayerOne ? FireBoltSpeed : FrostBoltSpeed;
 
         // Instantiate the projectile at the spawn point with no initial rotation (Quaternion.identity)
         GameObject projectile = Instantiate(projectilePrefab, spawnPoint.position, Quaternion.identity);
 
         // Set the rotation manually to ensure the correct rotation
-        if (isPlayerOne) // FireBolt for Player One
+        if (isPlayerOne)
         {
-            projectile.transform.rotation = Quaternion.Euler(0, 90, 0); // Set FireBolt to 0, 90, 0
+            projectile.transform.rotation = Quaternion.Euler(0, 90, 0);
         }
-        else // FrostBolt for Player Two
+        else
         {
-            projectile.transform.rotation = Quaternion.Euler(0, -90, 0); // Set FrostBolt to 0, -90, 0
+            projectile.transform.rotation = Quaternion.Euler(0, -90, 0);
         }
 
         // Ensure the projectile moves towards the target
-        while (projectile != null && Vector3.Distance(projectile.transform.position, target.position) > 0.1f)
+        float elapsedTime = 0f; // Track the time elapsed
+        while (projectile != null && elapsedTime < flightDuration)
         {
+            // Calculate the normalized time (0 to 1)
+            float normalizedTime = elapsedTime / flightDuration;
+
+            // Sample the AnimationCurve to get the speed at the current time
+            float projectileSpeed = speedCurve.Evaluate(normalizedTime);
+
             // Move the projectile towards the target
             projectile.transform.position = Vector3.MoveTowards(
                 projectile.transform.position,
@@ -141,24 +267,37 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
                 projectileSpeed * Time.deltaTime
             );
 
+            elapsedTime += Time.deltaTime; // Increment elapsed time
             yield return null; // Wait for the next frame
         }
 
-        // Destroy the projectile after reaching the target
+        // Destroy the projectile after reaching the target or finishing its flight duration
         if (projectile != null)
         {
             cameraShake.ShakeCamera();
-            ExplosionImpact.Play();
+
+            if (isPlayerOne)
+            {
+                ExplosionImpact.Play();
+                FireAnimator.SetTrigger("Flame");
+            }
+            else if (!isPlayerOne)
+            {
+                IceImpact.Play();
+                FrostAnimator.SetTrigger("Frost");
+            }
+
+            PlayerLosesLife();
+
             Destroy(projectile);
         }
     }
-
 
     private Coroutine attackCoroutinePlayerOne;
     private Coroutine attackCoroutinePlayerTwo;
     public void StartAttackSucessful()
     {
-        if (_isPlayerOne)
+        if (!_isPlayerOne)
         {
             if (attackCoroutinePlayerOne != null)
             {
@@ -172,8 +311,10 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
             ResetPlayerVisualsForPlayerOne(false);
 
             attackCoroutinePlayerOne = StartCoroutine(StartAttackSequence(true));
+
+            ReverseAttackSequence();
         }
-        else if (!_isPlayerOne)
+        else if (_isPlayerOne)
         {
             if (attackCoroutinePlayerTwo != null)
             {
@@ -187,6 +328,8 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
             ResetPlayerVisualsForPlayerOne(true);
 
             attackCoroutinePlayerTwo = StartCoroutine(StartAttackSequence(false));
+
+            ReverseAttackSequence();
         }
 
     }
@@ -213,6 +356,14 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
 
     [Header("Attack Sequence")]
     [SerializeField] public float reverseSpeedMultiplier = 5f;
+
+    private void StopAttackSequence()
+    {
+        StopAllCoroutines();
+
+        ResetPlayerVisualsForPlayerOne(true);
+        ResetPlayerVisualsForPlayerOne(false);
+    }
 
     private IEnumerator StartAttackSequence(bool isPlayerOne)
     {
@@ -320,38 +471,38 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
 
     private void Update()
     {
-        if (isPlayerOneTurn)
-        {
-            if (timer > 0)
-            {
-                playerOneAttackTimer.value = timer;
-                timer -= Time.deltaTime;
-            }
-            else
-            {
-                playerOneAttackTimer.value = playerOneAttackTimer.maxValue;
-            }
-        }
-        else
-        {
-            playerOneAttackTimer.value = playerOneAttackTimer.maxValue;
-        }
+        //if (isPlayerOneTurn)
+        //{
+        //    if (timer > 0)
+        //    {
+        //        playerOneAttackTimer.value = timer;
+        //        timer -= Time.deltaTime;
+        //    }
+        //    else
+        //    {
+        //        playerOneAttackTimer.value = playerOneAttackTimer.maxValue;
+        //    }
+        //}
+        //else
+        //{
+        //    playerOneAttackTimer.value = playerOneAttackTimer.maxValue;
+        //}
 
-        if (isPlayerTwoTurn)
-        {
-            if (timer > 0)
-            {
-                playerTwoAttackTimer.value = timer;
-                timer -= Time.deltaTime;
-            }
-            else
-            {
-                playerTwoAttackTimer.value = playerTwoAttackTimer.maxValue;
-            }
-        }
-        else
-        {
-            playerTwoAttackTimer.value = playerTwoAttackTimer.maxValue;
-        }
+        //if (isPlayerTwoTurn)
+        //{
+        //    if (timer > 0)
+        //    {
+        //        playerTwoAttackTimer.value = timer;
+        //        timer -= Time.deltaTime;
+        //    }
+        //    else
+        //    {
+        //        playerTwoAttackTimer.value = playerTwoAttackTimer.maxValue;
+        //    }
+        //}
+        //else
+        //{
+        //    playerTwoAttackTimer.value = playerTwoAttackTimer.maxValue;
+        //}
     }
 }

@@ -14,6 +14,8 @@ public class Player : MonoBehaviour
     public void DamagePlayer(int damage = 1)
     {
         lives--;
+
+        Actions.PlayerLoseLife?.Invoke();
     }
     public int GetPlayerNumber()
     {
