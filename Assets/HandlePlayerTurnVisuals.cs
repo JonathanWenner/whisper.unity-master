@@ -13,9 +13,13 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
 
     [SerializeField] CameraShake cameraShake;
 
-    [Header("Player Turn Visuals")]
+    [Header("Lights Move")]
+    [SerializeField] Animator[] LightAnimator;
+
+    [Header("BOOK")]
     [SerializeField] Animator Book;
     [SerializeField] TextMeshPro BookText;
+    [SerializeField] TextMeshPro BigLetter;
 
     [Header("Player one")]
     [SerializeField] GameObject playerOneTurnVisuals;
@@ -37,6 +41,9 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
     [SerializeField] Animator FireAnimator;
     [SerializeField] ParticleSystem FireTextParticles;
     [SerializeField] TextMeshPro FireText;
+    [Header("TextExplosion")]
+    [SerializeField] ParticleSystem TextExplosion1;
+    [SerializeField] TextMeshPro TextExplosionText;
 
     // life 
     [SerializeField] TextMeshProUGUI playerOneLife;
@@ -51,6 +58,10 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
     [SerializeField] Animator FrostAnimator;
     [SerializeField] ParticleSystem FrostTextParticles;
     [SerializeField] TextMeshPro FrostText;
+    [Header("TextExplosion")]
+    [SerializeField] ParticleSystem TextExplosion2;
+    [SerializeField] TextMeshPro TextExplosionText2;
+
 
 
 
@@ -143,6 +154,7 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
         {
             FirstAttack = false;
             StartAttackSucessful();
+
         }
         else if (DefendSucessful && !FirstAttack)
         {
@@ -338,13 +350,34 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
 
             if (isPlayerOne)
             {
-                ExplosionImpact.Play();
+                AudioManager.Instance.PlaySound("FireHit",1f,false);
+                AudioManager.Instance.PlaySound("Shake", 0.7f, true);
+                
+                TextExplosionText.text = LastSaidWord;
+                TextExplosion1.Play();
+                ExplosionImpact.Emit(3);
                 FireAnimator.SetTrigger("Flame");
+
+                foreach (var lamp in LightAnimator)
+                {
+                    lamp.SetTrigger("LightShake");
+                }
+
             }
             else if (!isPlayerOne)
             {
+                AudioManager.Instance.PlaySound("FrostHit",1f, false);
+                AudioManager.Instance.PlaySound("Shake", 0.7f, true);
+
+                TextExplosionText2.text = LastSaidWord;
+                TextExplosion2.Play();
                 IceImpact.Play();
                 FrostAnimator.SetTrigger("Frost");
+
+                foreach (var lamp in LightAnimator)
+                {
+                    lamp.SetTrigger("LightShake");
+                }
             }
 
             DustFromImpact.Play();
@@ -374,6 +407,9 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
             ResetPlayerVisualsForPlayerOne(false);
 
             attackCoroutinePlayerOne = StartCoroutine(StartAttackSequence(true));
+            AudioManager.Instance.PlaySound("MagicCircle", 0.8f, true);
+
+
 
             if (isReversing)
                 ReverseAttackSequence();
@@ -392,6 +428,8 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
             ResetPlayerVisualsForPlayerOne(true);
 
             attackCoroutinePlayerTwo = StartCoroutine(StartAttackSequence(false));
+            AudioManager.Instance.PlaySound("MagicCircle", 0.8f, true);
+
 
             if (isReversing)
             ReverseAttackSequence();
@@ -430,8 +468,12 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
         ResetPlayerVisualsForPlayerOne(false);
     }
 
+    private string LastSaidWord = "I am gay";
+
     private IEnumerator StartAttackSequence(bool isPlayerOne)
     {
+        LastSaidWord = stateManager.getLastSayedWord();
+
         if (isPlayerOne)
         {
             Debug.Log("Player One is defending.");
@@ -439,13 +481,19 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
             {
                 Debug.Log("No word was said");
 
-                FireText.text = "COCK";
-                BookText.text = "COCK";
+                FireText.text = "I am gay";
+                BookText.text = "I am gay";
+                BigLetter.text = "I";
+
             }
             else
             {
                 FireText.text = stateManager.getLastSayedWord();
                 BookText.text = stateManager.getLastSayedWord();
+
+                string FirstLetter = stateManager.getLastSayedWord().Substring(0, 1);
+
+                BigLetter.text = FirstLetter;
             }
 
             Book.Play("OpenBook");
@@ -461,13 +509,18 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
             {
                 Debug.Log("No word was said");
 
-                FrostText.text = "COCK";
-                BookText.text = "COCK";
+                FrostText.text = "I am gay";
+                BookText.text = "I am gay";
+                BigLetter.text = "I";
             }
             else
             {
                 FrostText.text = stateManager.getLastSayedWord();
                 BookText.text = stateManager.getLastSayedWord();
+
+                string FirstLetter = stateManager.getLastSayedWord().Substring(0, 1);
+
+                BigLetter.text = FirstLetter;
             }
 
             Book.Play("OpenBook");
@@ -522,6 +575,8 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
                     {
                         SpellActivation.Play();
                         yield return new WaitForSeconds(0.5f);
+                        AudioManager.Instance.PlaySound("FireFly", 1f, false);
+                        AudioManager.Instance.PlaySound("MagicCircleCompleted", 1f, true);
                         FireProjectile(true);
 
                         Book.Play("CloseBook");
@@ -530,6 +585,8 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
                     {
                         SpellActivation2.Play();
                         yield return new WaitForSeconds(0.5f);
+                        AudioManager.Instance.PlaySound("FrostFly", 1f, false);
+                        AudioManager.Instance.PlaySound("MagicCircleCompleted", 1f, true);
                         FireProjectile(false);
 
                         Book.Play("CloseBook");
