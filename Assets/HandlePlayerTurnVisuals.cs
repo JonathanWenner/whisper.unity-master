@@ -9,9 +9,14 @@ using UnityEngine.UI;
 public class HandlePlayerTurnVisuals : MonoBehaviour
 {
 
+    [SerializeField] StateManager stateManager;
+
     [SerializeField] CameraShake cameraShake;
 
     [Header("Player Turn Visuals")]
+    [SerializeField] Animator Book;
+    [SerializeField] TextMeshPro BookText;
+
     [Header("Player one")]
     [SerializeField] GameObject playerOneTurnVisuals;
     [SerializeField] CanvasGroup playerOnePortrait;
@@ -30,6 +35,8 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
     [SerializeField] Image SpellActivationCircle;
     [SerializeField] ParticleSystem ExplosionImpact;
     [SerializeField] Animator FireAnimator;
+    [SerializeField] ParticleSystem FireTextParticles;
+    [SerializeField] TextMeshPro FireText;
 
     // life 
     [SerializeField] TextMeshProUGUI playerOneLife;
@@ -42,6 +49,10 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
     [SerializeField] Image SpellActivationCircle1;
     [SerializeField] ParticleSystem IceImpact;
     [SerializeField] Animator FrostAnimator;
+    [SerializeField] ParticleSystem FrostTextParticles;
+    [SerializeField] TextMeshPro FrostText;
+
+
 
     // life 
     [SerializeField] TextMeshProUGUI playerTwoLife;
@@ -80,7 +91,7 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
         //Actions.EndDefend += InitializeDefend;
 
         // Attack
-        //Actions.StartAttack += InitializeAttack;
+        Actions.StartAttack += InitializeFirstAttack;
         Actions.AttackOutcome += SetAttackOutcome;
         Actions.EndAttack += InitializeAttack;
 
@@ -93,11 +104,11 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
         Actions.playerOneTurn -= EnablePlayerTurnVisuals;
 
         // Defend
-        Actions.StartDefend -= InitializeDefend;
+        //Actions.StartDefend -= InitializeDefend;
         Actions.DefendOutcome -= SetDefendingOutcome;
-        //Actions.EndDefend -= InitializeDefend;
+        Actions.EndDefend -= InitializeDefend;
 
-        Actions.StartAttack -= InitializeAttack;
+        Actions.StartAttack -= InitializeFirstAttack;
         Actions.AttackOutcome -= SetAttackOutcome;
         Actions.EndAttack -= InitializeAttack;
 
@@ -119,14 +130,24 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
         AttackSucessful = Sucess;
     }
 
+    bool FirstAttack = true;
+
     private void InitializeDefend()
     {
         Debug.Log("Defend Sucessful: " + DefendSucessful);
         Debug.Log("player" + (!_isPlayerOne ? "One" : "Two") + " Defended");
 
-        if (DefendSucessful)
+
+        // When the first player starts in the first round make sure the sequence start
+        if (FirstAttack)
         {
+            FirstAttack = false;
             StartAttackSucessful();
+        }
+        else if (DefendSucessful && !FirstAttack)
+        {
+           StartAttackSucessful();
+            
         }
         else
         {
@@ -136,6 +157,14 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
 
     }
 
+    private void InitializeFirstAttack()
+    {
+        //if (FirstAttack)
+        //{
+        //    FirstAttack = false;
+        //    StartCoroutine(StartAttackSequence(!_isPlayerOne));
+        //}
+    }
     private void InitializeAttack()
     {
         Debug.Log("Attack Sucessful: " + AttackSucessful);
@@ -330,6 +359,7 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
     private Coroutine attackCoroutinePlayerTwo;
     public void StartAttackSucessful()
     {
+
         if (!_isPlayerOne)
         {
             if (attackCoroutinePlayerOne != null)
@@ -345,7 +375,8 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
 
             attackCoroutinePlayerOne = StartCoroutine(StartAttackSequence(true));
 
-            ReverseAttackSequence();
+            if (isReversing)
+                ReverseAttackSequence();
         }
         else if (_isPlayerOne)
         {
@@ -362,6 +393,7 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
 
             attackCoroutinePlayerTwo = StartCoroutine(StartAttackSequence(false));
 
+            if (isReversing)
             ReverseAttackSequence();
         }
 
@@ -383,9 +415,9 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
 
     private Color OriginalColor;
     private Color OriginalColor1;
-
-    private bool isPaused = false;
-    private bool isReversing = false;
+    [Header("Attack Sequence")]
+    public bool isPaused = false;
+    public bool isReversing = false;
 
     [Header("Attack Sequence")]
     [SerializeField] public float reverseSpeedMultiplier = 5f;
@@ -400,6 +432,49 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
 
     private IEnumerator StartAttackSequence(bool isPlayerOne)
     {
+        if (isPlayerOne)
+        {
+            Debug.Log("Player One is defending.");
+            if (stateManager.getLastSayedWord() == null)
+            {
+                Debug.Log("No word was said");
+
+                FireText.text = "COCK";
+                BookText.text = "COCK";
+            }
+            else
+            {
+                FireText.text = stateManager.getLastSayedWord();
+                BookText.text = stateManager.getLastSayedWord();
+            }
+
+            Book.Play("OpenBook");
+
+            FireTextParticles.Play();
+            Debug.Log("Set Word to:" + stateManager.gottenWord);
+        }
+        else
+        {
+
+            Debug.Log("Player One is defending.");
+            if (stateManager.getLastSayedWord() == null)
+            {
+                Debug.Log("No word was said");
+
+                FrostText.text = "COCK";
+                BookText.text = "COCK";
+            }
+            else
+            {
+                FrostText.text = stateManager.getLastSayedWord();
+                BookText.text = stateManager.getLastSayedWord();
+            }
+
+            Book.Play("OpenBook");
+
+            FrostTextParticles.Play();
+        }
+
         float elapsedTime = 0f;
         float duration = GameSettings.DefendStateTime;
 
@@ -448,12 +523,16 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
                         SpellActivation.Play();
                         yield return new WaitForSeconds(0.5f);
                         FireProjectile(true);
+
+                        Book.Play("CloseBook");
                     }
                     else
                     {
                         SpellActivation2.Play();
                         yield return new WaitForSeconds(0.5f);
                         FireProjectile(false);
+
+                        Book.Play("CloseBook");
                     }
 
                     ReverseAttackSequence();
