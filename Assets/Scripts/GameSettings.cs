@@ -9,7 +9,7 @@ public class GameSettings : MonoBehaviour
     [SerializeField] public static float AttackStateTime = 5f;
     [SerializeField] public static float DefendStateTime = 5f;
 
-    [SerializeField] public static int RythmGameSetSize = 5;
+
 
     private void Start()
     {
