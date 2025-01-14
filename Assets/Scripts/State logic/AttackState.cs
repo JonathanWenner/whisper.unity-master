@@ -103,6 +103,7 @@ public class AttackState : IState
             stateManager.CheckForWinner();
             stateManager.TransitionToNextState(true);
 
+
         }
         else // if a corrrect word is give
         {
