@@ -480,6 +480,11 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
 
     private float GestureSpeed = 1f;
 
+
+    [Header("Attack On Standby effects")]
+    [SerializeField] private ParticleSystem AttackOnStandbyEffectPlayerOne;
+    [SerializeField] private ParticleSystem AttackOnStandbyEffectPlayerTwo;
+
     private IEnumerator StartAttackSequence(bool isPlayerOne)
     {
         LastSaidWord = stateManager.getLastSayedWord();
@@ -506,7 +511,7 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
                 BigLetter.text = FirstLetter;
             }
 
-            Book.Play("OpenBook");
+            Book.Play("OpenBookPlayerTwo");
 
             FireTextParticles.Play();
             Debug.Log("Set Word to:" + stateManager.gottenWord);
@@ -533,7 +538,7 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
                 BigLetter.text = FirstLetter;
             }
 
-            Book.Play("OpenBook");
+            Book.Play("OpenBookPlayerOne");
 
             FrostTextParticles.Play();
         }
@@ -591,6 +596,7 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
                         //Book.Play("CloseBook");
 
                         isPlayerOneDefending = !isPlayerOne;
+                        AttackOnStandbyEffectPlayerTwo.Play();
                     }
                     else
                     {
@@ -602,9 +608,11 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
                         //Book.Play("CloseBook");
 
                         isPlayerOneDefending = isPlayerOne;
+                        AttackOnStandbyEffectPlayerOne.Play();
+
                     }
 
-                    
+
                 }
                 else if (progress <= 0f && !hasLoggedEmpty)
                 {
@@ -666,20 +674,24 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
     }
     public void ActivateAttackAgainstPlayerOne()
     {
+        AttackOnStandbyEffectPlayerOne.Stop();
         SpellActivation2.Play();
         AudioManager.Instance.PlaySound("FrostFly", 1f, false);
         AudioManager.Instance.PlaySound("MagicCircleCompleted", 1f, true);
         FireProjectile(false);
-        Book.Play("CloseBook");
+        Book.SetTrigger("CloseBookPlayerOne");
+        ReverseAttackSequence();
     }
 
     public void ActivateAttackAgainstPlayerTwo()
     {
+        AttackOnStandbyEffectPlayerOne.Stop();
         SpellActivation.Play();
         AudioManager.Instance.PlaySound("FireFly", 1f, false);
         AudioManager.Instance.PlaySound("MagicCircleCompleted", 1f, true);
         FireProjectile(true);
-        Book.Play("CloseBook");
+        Book.SetTrigger("CloseBookPlayerTwo");
+        ReverseAttackSequence();
     }
 
     private void Update()
