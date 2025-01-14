@@ -99,7 +99,7 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
         // Defend
         Actions.StartDefend += InitializeDefend;
         Actions.DefendOutcome += SetDefendingOutcome;
-        Actions.EndDefend += ActivateSpellAttack;
+        //Actions.EndDefend += InitializeDefend;
 
         // Attack
         Actions.StartAttack += InitializeFirstAttack;
@@ -108,9 +108,6 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
 
         Actions.PlayerLoseLife += PlayerLosesLife;
 
-        Actions.ResetBackToAttack += IsResetToAttack;
-        //Actions.ResetToAttack += StartAttackSucessful;
-
     }
 
     private void OnDisable()
@@ -118,9 +115,9 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
         Actions.playerOneTurn -= EnablePlayerTurnVisuals;
 
         // Defend
-        Actions.StartDefend -= InitializeDefend;
+        //Actions.StartDefend -= InitializeDefend;
         Actions.DefendOutcome -= SetDefendingOutcome;
-        Actions.EndDefend -= ActivateSpellAttack;
+        Actions.EndDefend -= InitializeDefend;
 
         Actions.StartAttack -= InitializeFirstAttack;
         Actions.AttackOutcome -= SetAttackOutcome;
@@ -133,7 +130,6 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
 
     private bool AttackSucessful = false;
     private bool DefendSucessful = false;
-    private bool isResetToAttack = false;   
 
     private void SetDefendingOutcome(bool Success)
     {
@@ -145,15 +141,12 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
         AttackSucessful = Sucess;
     }
 
-    private void IsResetToAttack(bool isReset)
-    {
-        isResetToAttack = isReset;
-    }
-
     bool FirstAttack = true;
 
     private void InitializeDefend()
     {
+        Debug.Log("Defend Sucessful: " + DefendSucessful);
+        Debug.Log("player" + (!_isPlayerOne ? "One" : "Two") + " Defended");
 
 
         // When the first player starts in the first round make sure the sequence start
@@ -165,18 +158,15 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
         }
         else if (DefendSucessful && !FirstAttack)
         {
-            //player failed, start attack
-           StartAttackSucessful();        
+           StartAttackSucessful();
+            
         }
-    }
-
-    private void ActivateSpellAttack()
-    {
-
-        if (!DefendSucessful)
+        else
         {
-            StartAttack();
+            Debug.Log("Unsuccesful Defend");
         }
+
+
     }
 
     private void InitializeFirstAttack()
@@ -392,6 +382,8 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
 
             DustFromImpact.Play();
 
+            PlayerLosesLife();
+
             Destroy(projectile);
         }
     }
@@ -478,13 +470,6 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
 
     private string LastSaidWord = "I am gay";
 
-    private float GestureSpeed = 1f;
-
-
-    [Header("Attack On Standby effects")]
-    [SerializeField] private ParticleSystem AttackOnStandbyEffectPlayerOne;
-    [SerializeField] private ParticleSystem AttackOnStandbyEffectPlayerTwo;
-
     private IEnumerator StartAttackSequence(bool isPlayerOne)
     {
         LastSaidWord = stateManager.getLastSayedWord();
@@ -511,7 +496,7 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
                 BigLetter.text = FirstLetter;
             }
 
-            Book.Play("OpenBookPlayerTwo");
+            Book.Play("OpenBook");
 
             FireTextParticles.Play();
             Debug.Log("Set Word to:" + stateManager.gottenWord);
@@ -538,7 +523,7 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
                 BigLetter.text = FirstLetter;
             }
 
-            Book.Play("OpenBookPlayerOne");
+            Book.Play("OpenBook");
 
             FrostTextParticles.Play();
         }
@@ -560,7 +545,7 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
                 }
                 else
                 {
-                    elapsedTime += Time.deltaTime * GestureSpeed;
+                    elapsedTime += Time.deltaTime;
                 }
 
                 // Clamp elapsedTime to stay within bounds
@@ -588,31 +573,26 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
 
                     if (isPlayerOne)
                     {
-                        //SpellActivation.Play();
-                        //yield return new WaitForSeconds(0.5f);
-                        //AudioManager.Instance.PlaySound("FireFly", 1f, false);
-                        //AudioManager.Instance.PlaySound("MagicCircleCompleted", 1f, true);
-                        //FireProjectile(true);
-                        //Book.Play("CloseBook");
+                        SpellActivation.Play();
+                        yield return new WaitForSeconds(0.5f);
+                        AudioManager.Instance.PlaySound("FireFly", 1f, false);
+                        AudioManager.Instance.PlaySound("MagicCircleCompleted", 1f, true);
+                        FireProjectile(true);
 
-                        isPlayerOneDefending = !isPlayerOne;
-                        AttackOnStandbyEffectPlayerTwo.Play();
+                        Book.Play("CloseBook");
                     }
                     else
                     {
-                        //SpellActivation2.Play();
-                        //yield return new WaitForSeconds(0.5f);
-                        //AudioManager.Instance.PlaySound("FrostFly", 1f, false);
-                        //AudioManager.Instance.PlaySound("MagicCircleCompleted", 1f, true);
-                        //FireProjectile(false);
-                        //Book.Play("CloseBook");
+                        SpellActivation2.Play();
+                        yield return new WaitForSeconds(0.5f);
+                        AudioManager.Instance.PlaySound("FrostFly", 1f, false);
+                        AudioManager.Instance.PlaySound("MagicCircleCompleted", 1f, true);
+                        FireProjectile(false);
 
-                        isPlayerOneDefending = isPlayerOne;
-                        AttackOnStandbyEffectPlayerOne.Play();
-
+                        Book.Play("CloseBook");
                     }
 
-
+                    ReverseAttackSequence();
                 }
                 else if (progress <= 0f && !hasLoggedEmpty)
                 {
@@ -656,42 +636,6 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
     public void ReverseAttackSequence()
     {
         isReversing = !isReversing;
-    }
-
-    private bool isPlayerOneDefending = false;
-
-    public void StartAttack()
-    {
-
-        if (!isPlayerOneDefending)
-        {
-            ActivateAttackAgainstPlayerOne();
-        }
-        else
-        {
-            ActivateAttackAgainstPlayerTwo();
-        }
-    }
-    public void ActivateAttackAgainstPlayerOne()
-    {
-        AttackOnStandbyEffectPlayerOne.Stop();
-        SpellActivation2.Play();
-        AudioManager.Instance.PlaySound("FrostFly", 1f, false);
-        AudioManager.Instance.PlaySound("MagicCircleCompleted", 1f, true);
-        FireProjectile(false);
-        Book.SetTrigger("CloseBookPlayerOne");
-        ReverseAttackSequence();
-    }
-
-    public void ActivateAttackAgainstPlayerTwo()
-    {
-        AttackOnStandbyEffectPlayerOne.Stop();
-        SpellActivation.Play();
-        AudioManager.Instance.PlaySound("FireFly", 1f, false);
-        AudioManager.Instance.PlaySound("MagicCircleCompleted", 1f, true);
-        FireProjectile(true);
-        Book.SetTrigger("CloseBookPlayerTwo");
-        ReverseAttackSequence();
     }
 
     private void Update()

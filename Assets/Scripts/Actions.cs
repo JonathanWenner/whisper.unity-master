@@ -28,8 +28,5 @@ public static class Actions
     // player lose life
     public static Action PlayerLoseLife;
 
-    public static Action<bool> ResetBackToAttack;
-    public static Action ResetToAttack;
-
 
 }

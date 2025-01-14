@@ -51,24 +51,16 @@ public class StateManager : MonoBehaviour
         currentState.Start();
     }
 
-    public void TransitionToNextState(bool reset = false, bool toFirst = false)
+    public void TransitionToNextState(bool reset = false)
     {
         Debug.Log("started standerd state transition");
         if (reset)
-        {
-            currentStateIndex = 1;
-            System.Type nextStateType = currrentGameMode.StateSequence[currentStateIndex];
-            IState nextState = stateFactory.createState(nextStateType);
-            StartCoroutine(TransitionToState(nextState));
-        }
-        else if (toFirst)
         {
             currentStateIndex = 0;
             System.Type nextStateType = currrentGameMode.StateSequence[currentStateIndex];
             IState nextState = stateFactory.createState(nextStateType);
             StartCoroutine(TransitionToState(nextState));
         }
-
         else if (currentStateIndex < currrentGameMode.StateSequence.Count - 1)
         {
             System.Type nextStateType = currrentGameMode.StateSequence[currentStateIndex+1];
@@ -145,19 +137,6 @@ public class StateManager : MonoBehaviour
             return player2;
         }
     }
-
-    public Player GetNotPlayerTurn()
-    {
-        if (!isPlayerOneTurn)
-        {
-            return player1;
-        }
-        else
-        {
-            return player2;
-        }
-    }
-
     public void SetPlayerTurn(Player player)
     {
         if (player == player1)

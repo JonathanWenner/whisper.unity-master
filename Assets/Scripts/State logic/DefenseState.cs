@@ -8,37 +8,30 @@ public class DefendState : IState
 {
     private StateManager stateManager;
     private Player defender;
-    private Player attacker;
+
     private float stateTime = GameSettings.DefendStateTime;
 
     private string answerdWord;
-
-    private float attackerBoost;
 
     public DefendState(StateManager stateManager)
     {
         this.stateManager = stateManager;
         defender = this.stateManager.GetPlayerTurn();
-        attacker = this.stateManager.GetNotPlayerTurn();
     }
 
 
     public void Start()
     {
-
         Actions.StartDefend?.Invoke();
 
-
-        attacker.rythm.StartRythm(stateTime);
         defender.SpeechRecognitionController.Click();
         stateManager.StartCoroutine(WaitForWord());
     }
 
     public void Update()
     {
-        attackerBoost = attacker.rythm.GetAttackerBoost();
         stateManager.uiHandler.drawTimer(stateManager.timer);
-        stateManager.timer -= Time.deltaTime * attackerBoost;
+        stateManager.timer -= Time.deltaTime;
     }
 
     public void Exit()
@@ -93,13 +86,12 @@ public class DefendState : IState
         else
             answerdWord = "";
 
-        attacker.rythm.StopRythm();
 
         if (string.IsNullOrEmpty(answerdWord) || stateManager.Illegalwordlist.isInList(answerdWord) || !true)
         {
             // unsuccesfull defend
 
-            Actions.DefendOutcome(false);
+           Actions.DefendOutcome(false);
 
             Actions.EndDefend?.Invoke();
 
