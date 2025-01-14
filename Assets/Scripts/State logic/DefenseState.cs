@@ -22,6 +22,8 @@ public class DefendState : IState
 
     public void Start()
     {
+        stateTime = GameSettings.DefendStateTime;
+
         Actions.StartDefend?.Invoke();
 
         defender.SpeechRecognitionController.Click();
@@ -91,7 +93,7 @@ public class DefendState : IState
         {
             // unsuccesfull defend
 
-           Actions.DefendOutcome(false);
+            Actions.DefendOutcome(false);
 
             Actions.EndDefend?.Invoke();
 

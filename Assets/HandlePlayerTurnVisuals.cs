@@ -99,7 +99,7 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
         // Defend
         Actions.StartDefend += InitializeDefend;
         Actions.DefendOutcome += SetDefendingOutcome;
-        //Actions.EndDefend += InitializeDefend;
+        Actions.EndDefend += ActivateSpellAttack;
 
         // Attack
         Actions.StartAttack += InitializeFirstAttack;
@@ -108,6 +108,9 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
 
         Actions.PlayerLoseLife += PlayerLosesLife;
 
+        Actions.ResetBackToAttack += IsResetToAttack;
+        //Actions.ResetToAttack += StartAttackSucessful;
+
     }
 
     private void OnDisable()
@@ -115,9 +118,9 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
         Actions.playerOneTurn -= EnablePlayerTurnVisuals;
 
         // Defend
-        //Actions.StartDefend -= InitializeDefend;
+        Actions.StartDefend -= InitializeDefend;
         Actions.DefendOutcome -= SetDefendingOutcome;
-        Actions.EndDefend -= InitializeDefend;
+        Actions.EndDefend -= ActivateSpellAttack;
 
         Actions.StartAttack -= InitializeFirstAttack;
         Actions.AttackOutcome -= SetAttackOutcome;
@@ -130,6 +133,7 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
 
     private bool AttackSucessful = false;
     private bool DefendSucessful = false;
+    private bool isResetToAttack = false;   
 
     private void SetDefendingOutcome(bool Success)
     {
@@ -141,12 +145,15 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
         AttackSucessful = Sucess;
     }
 
+    private void IsResetToAttack(bool isReset)
+    {
+        isResetToAttack = isReset;
+    }
+
     bool FirstAttack = true;
 
     private void InitializeDefend()
     {
-        Debug.Log("Defend Sucessful: " + DefendSucessful);
-        Debug.Log("player" + (!_isPlayerOne ? "One" : "Two") + " Defended");
 
 
         // When the first player starts in the first round make sure the sequence start
@@ -158,15 +165,18 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
         }
         else if (DefendSucessful && !FirstAttack)
         {
-           StartAttackSucessful();
-            
+            //player failed, start attack
+           StartAttackSucessful();        
         }
-        else
+    }
+
+    private void ActivateSpellAttack()
+    {
+
+        if (!DefendSucessful)
         {
-            Debug.Log("Unsuccesful Defend");
+            StartAttack();
         }
-
-
     }
 
     private void InitializeFirstAttack()
@@ -382,8 +392,6 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
 
             DustFromImpact.Play();
 
-            PlayerLosesLife();
-
             Destroy(projectile);
         }
     }
@@ -470,6 +478,8 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
 
     private string LastSaidWord = "I am gay";
 
+    private float GestureSpeed = 1f;
+
     private IEnumerator StartAttackSequence(bool isPlayerOne)
     {
         LastSaidWord = stateManager.getLastSayedWord();
@@ -545,7 +555,7 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
                 }
                 else
                 {
-                    elapsedTime += Time.deltaTime;
+                    elapsedTime += Time.deltaTime * GestureSpeed;
                 }
 
                 // Clamp elapsedTime to stay within bounds
@@ -573,26 +583,28 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
 
                     if (isPlayerOne)
                     {
-                        SpellActivation.Play();
-                        yield return new WaitForSeconds(0.5f);
-                        AudioManager.Instance.PlaySound("FireFly", 1f, false);
-                        AudioManager.Instance.PlaySound("MagicCircleCompleted", 1f, true);
-                        FireProjectile(true);
+                        //SpellActivation.Play();
+                        //yield return new WaitForSeconds(0.5f);
+                        //AudioManager.Instance.PlaySound("FireFly", 1f, false);
+                        //AudioManager.Instance.PlaySound("MagicCircleCompleted", 1f, true);
+                        //FireProjectile(true);
+                        //Book.Play("CloseBook");
 
-                        Book.Play("CloseBook");
+                        isPlayerOneDefending = !isPlayerOne;
                     }
                     else
                     {
-                        SpellActivation2.Play();
-                        yield return new WaitForSeconds(0.5f);
-                        AudioManager.Instance.PlaySound("FrostFly", 1f, false);
-                        AudioManager.Instance.PlaySound("MagicCircleCompleted", 1f, true);
-                        FireProjectile(false);
+                        //SpellActivation2.Play();
+                        //yield return new WaitForSeconds(0.5f);
+                        //AudioManager.Instance.PlaySound("FrostFly", 1f, false);
+                        //AudioManager.Instance.PlaySound("MagicCircleCompleted", 1f, true);
+                        //FireProjectile(false);
+                        //Book.Play("CloseBook");
 
-                        Book.Play("CloseBook");
+                        isPlayerOneDefending = isPlayerOne;
                     }
 
-                    ReverseAttackSequence();
+                    
                 }
                 else if (progress <= 0f && !hasLoggedEmpty)
                 {
@@ -636,6 +648,38 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
     public void ReverseAttackSequence()
     {
         isReversing = !isReversing;
+    }
+
+    private bool isPlayerOneDefending = false;
+
+    public void StartAttack()
+    {
+
+        if (!isPlayerOneDefending)
+        {
+            ActivateAttackAgainstPlayerOne();
+        }
+        else
+        {
+            ActivateAttackAgainstPlayerTwo();
+        }
+    }
+    public void ActivateAttackAgainstPlayerOne()
+    {
+        SpellActivation2.Play();
+        AudioManager.Instance.PlaySound("FrostFly", 1f, false);
+        AudioManager.Instance.PlaySound("MagicCircleCompleted", 1f, true);
+        FireProjectile(false);
+        Book.Play("CloseBook");
+    }
+
+    public void ActivateAttackAgainstPlayerTwo()
+    {
+        SpellActivation.Play();
+        AudioManager.Instance.PlaySound("FireFly", 1f, false);
+        AudioManager.Instance.PlaySound("MagicCircleCompleted", 1f, true);
+        FireProjectile(true);
+        Book.Play("CloseBook");
     }
 
     private void Update()
