@@ -206,11 +206,7 @@ AnimationClip:
         outWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
       - serializedVersion: 3
         time: 0.6666667
-<<<<<<<< HEAD:Assets/UI/Materials/CloseBook.anim
         value: {x: -2.08, y: 2.75, z: -10.52}
-========
-        value: {x: -1.42, y: -0.549, z: -10.89}
->>>>>>>> TempBranch:Assets/Animations/CloseBookPlayerOne.anim
         inSlope: {x: 0, y: 0, z: 0}
         outSlope: {x: 0, y: 0, z: 0}
         tangentMode: 0
@@ -236,7 +232,7 @@ AnimationClip:
         outWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
       - serializedVersion: 3
         time: 0.6666667
-        value: {x: 0.5432305, y: 0.5432305, z: 0.5432305}
+        value: {x: 0.17018498, y: 0.17018498, z: 0.17018498}
         inSlope: {x: 0, y: 0, z: 0}
         outSlope: {x: 0, y: 0, z: 0}
         tangentMode: 0
@@ -1124,11 +1120,7 @@ AnimationClip:
         outWeight: 0.33333334
       - serializedVersion: 3
         time: 0.6666667
-<<<<<<<< HEAD:Assets/UI/Materials/CloseBook.anim
         value: -2.08
-========
-        value: -1.42
->>>>>>>> TempBranch:Assets/Animations/CloseBookPlayerOne.anim
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -1158,7 +1150,7 @@ AnimationClip:
         outWeight: 0.33333334
       - serializedVersion: 3
         time: 0.6666667
-        value: -0.549
+        value: 2.75
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -1188,11 +1180,7 @@ AnimationClip:
         outWeight: 0.33333334
       - serializedVersion: 3
         time: 0.6666667
-<<<<<<<< HEAD:Assets/UI/Materials/CloseBook.anim
         value: -10.52
-========
-        value: -10.89
->>>>>>>> TempBranch:Assets/Animations/CloseBookPlayerOne.anim
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -1222,7 +1210,7 @@ AnimationClip:
         outWeight: 0.33333334
       - serializedVersion: 3
         time: 0.6666667
-        value: 0.5432305
+        value: 0.17018498
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -1252,7 +1240,7 @@ AnimationClip:
         outWeight: 0.33333334
       - serializedVersion: 3
         time: 0.6666667
-        value: 0.5432305
+        value: 0.17018498
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -1282,7 +1270,7 @@ AnimationClip:
         outWeight: 0.33333334
       - serializedVersion: 3
         time: 0.6666667
-        value: 0.5432305
+        value: 0.17018498
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -1331,45 +1319,6 @@ AnimationClip:
       m_RotationOrder: 4
     attribute: m_LocalEulerAngles.x
     path: Cube (10)
-<<<<<<<< HEAD:Assets/UI/Materials/CloseBook.anim
-========
-    classID: 4
-    script: {fileID: 0}
-    flags: 0
-  - serializedVersion: 2
-    curve:
-      serializedVersion: 2
-      m_Curve: []
-      m_PreInfinity: 2
-      m_PostInfinity: 2
-      m_RotationOrder: 4
-    attribute: m_LocalEulerAngles.z
-    path: 
-    classID: 4
-    script: {fileID: 0}
-    flags: 0
-  - serializedVersion: 2
-    curve:
-      serializedVersion: 2
-      m_Curve: []
-      m_PreInfinity: 2
-      m_PostInfinity: 2
-      m_RotationOrder: 4
-    attribute: m_LocalEulerAngles.y
-    path: 
-    classID: 4
-    script: {fileID: 0}
-    flags: 0
-  - serializedVersion: 2
-    curve:
-      serializedVersion: 2
-      m_Curve: []
-      m_PreInfinity: 2
-      m_PostInfinity: 2
-      m_RotationOrder: 4
-    attribute: m_LocalEulerAngles.x
-    path: 
->>>>>>>> TempBranch:Assets/Animations/CloseBookPlayerOne.anim
     classID: 4
     script: {fileID: 0}
     flags: 0

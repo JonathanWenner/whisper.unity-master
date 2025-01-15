@@ -28,13 +28,5 @@ public static class Actions
     // player lose life
     public static Action PlayerLoseLife;
 
-<<<<<<< HEAD
-=======
-    public static Action<bool> ResetBackToAttack;
-    public static Action ResetToAttack;
-
-    public static Action<string> GetLastSaidWord;
-
->>>>>>> TempBranch
 
 }

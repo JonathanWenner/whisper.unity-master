@@ -29,21 +29,21 @@ public class DefendState : IState
         Actions.StartDefend?.Invoke();
 
 
-        //attacker.rythm.StartRythm(stateTime);
+        attacker.rythm.StartRythm(stateTime);
         defender.SpeechRecognitionController.Click();
         stateManager.StartCoroutine(WaitForWord());
     }
 
     public void Update()
     {
-        //attackerBoost = attacker.rythm.GetAttackerBoost();
+        attackerBoost = attacker.rythm.GetAttackerBoost();
         stateManager.uiHandler.drawTimer(stateManager.timer);
         stateManager.timer -= Time.deltaTime * attackerBoost;
     }
 
     public void Exit()
     {
-
+        stateManager.setLastSayedWord(answerdWord);
     }
 
 
@@ -93,17 +93,11 @@ public class DefendState : IState
         else
             answerdWord = "";
 
-        //attacker.rythm.StopRythm();
+        attacker.rythm.StopRythm();
 
         if (string.IsNullOrEmpty(answerdWord) || stateManager.Illegalwordlist.isInList(answerdWord) || !true)
         {
             // unsuccesfull defend
-
-            stateManager.setLastSayedWord(answerdWord);
-
-            Debug.Log("last sayed word: " + stateManager.getLastSayedWord());
-
-            Actions.GetLastSaidWord?.Invoke(stateManager.getLastSayedWord());
 
             Actions.DefendOutcome(false);
 
@@ -116,12 +110,6 @@ public class DefendState : IState
         }
         else
         {
-            stateManager.setLastSayedWord(answerdWord);
-
-            Debug.Log("last sayed word: " + stateManager.getLastSayedWord());
-
-            Actions.GetLastSaidWord?.Invoke(stateManager.getLastSayedWord());
-
             Actions.DefendOutcome(true);
 
             Actions.EndDefend?.Invoke();
