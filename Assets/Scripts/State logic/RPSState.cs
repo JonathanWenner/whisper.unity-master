@@ -126,6 +126,6 @@ public class RPSState : IState
     private void TieRPS()
     {
         Debug.Log("rock paper siscor is a tie");
-        stateManager.TransitionToNextState(true);
+        stateManager.TransitionToNextState(false, true);
     }
 }
