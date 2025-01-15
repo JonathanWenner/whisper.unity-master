@@ -6,6 +6,7 @@ using Unity.Sentis;
 using System.IO;
 using Newtonsoft.Json;
 using System.Text;
+using System.Linq;
 
 /*
  *              Whisper Inference Code
@@ -187,9 +188,18 @@ public class RunWhisper : MonoBehaviour
                 //outputString += $"(time={(ID - START_TIME) * 0.02f})";
                 speechRecognitionController.onResponse.Invoke(outputString);
             }
-            else outputString += GetUnicodeText(tokens[ID]);
+            else
+            {
+                if (outputString.Length < 40)
+                {
+                    outputString += GetUnicodeText(tokens[ID]).Split('.').First();
+                }
+            }
+                
 
             Debug.Log(outputString);
+
+            
         }
     }
 

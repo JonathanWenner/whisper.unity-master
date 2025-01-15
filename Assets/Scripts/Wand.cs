@@ -5,17 +5,31 @@ using UnityEngine;
 
 public class Wand : MonoBehaviour
 {
+    public GameObject prefabRock;
+    public GameObject prefabPaper;
+    public GameObject prefabSiscor;
+
+    public GameObject prefabDown;
+    public GameObject prefabLeft;
+    public GameObject prefabRight;
+
     // gestures that can be detected
     public enum WandGestures
     {
         Rock,
         Paper,
         Scissor,
+        ProbDown,
+        ProbLeft,
+        ProbRight,
         nothing
     }
 
+
     // detected gestures
     WandGestures detectedGesture = WandGestures.nothing;
+
+    WandGestures detectedRythmGesture = WandGestures.nothing;
     bool isRecording = false;
 
     
@@ -45,6 +59,7 @@ public class Wand : MonoBehaviour
     public void ResetRecordedGesture() // function that sets the last detected gesture to nothing
     {
         detectedGesture = WandGestures.nothing;
+        detectedRythmGesture = WandGestures.nothing;
     }
     public WandGestures GetDetectedGesture()
     {
@@ -60,14 +75,25 @@ public class Wand : MonoBehaviour
             switch (msg) {
                 case "Right":
                     detectedGesture = WandGestures.Rock;
+                    detectedRythmGesture = WandGestures.ProbRight;
                     break;
                 case "Down": 
                     detectedGesture = WandGestures.Paper;
+                    detectedRythmGesture = WandGestures.ProbDown;
                     break;
                 case "Left":
                     detectedGesture = WandGestures.Scissor;
+                    detectedRythmGesture = WandGestures.ProbLeft;
                     break;
-
+                case "ProbDown":
+                    detectedRythmGesture = WandGestures.ProbDown;
+                    break;
+                case "ProbLeft":
+                    detectedRythmGesture = WandGestures.ProbLeft;
+                    break;
+                case "ProbRight":
+                    detectedRythmGesture = WandGestures.ProbRight;
+                    break;
             }
         }
     }

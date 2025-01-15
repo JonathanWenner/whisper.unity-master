@@ -1,7 +1,4 @@
 using System.Collections;
-using System.Collections.Generic;
-using UnityEditor.Experimental.GraphView;
-using UnityEditor.SceneManagement;
 using UnityEngine;
 
 public class DefendState : IState
@@ -43,6 +40,7 @@ public class DefendState : IState
 
     public void Exit()
     {
+        attacker.rythm.StopRythm();
         stateManager.setLastSayedWord(answerdWord);
     }
 

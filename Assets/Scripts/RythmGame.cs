@@ -1,29 +1,26 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Transactions;
 using UnityEngine;
-using UnityEngine.Rendering;
-using UnityEngine.UI;
 
 public class RythmGame : MonoBehaviour
 {
     public Player player;
 
-    // images for rythm game
-    public RawImage DownImagePrefab;
-    public RawImage RightImagePrefab;
-    public RawImage LeftImagePrefab;
+    // Prefabs for the rhythm game
+    public GameObject DownSpritePrefab;
+    public GameObject RightSpritePrefab;
+    public GameObject LeftSpritePrefab;
     public Transform NodeContainer;
 
     int succesfullChaneCount = 0;
 
-    // arrays for images, representation of set, bools for checking if done
-    RawImage[] NodeSetImages;
+    // Arrays for images, representation of set, bools for checking if done
+    GameObject[] NodeSetSprites;
     PointArrows[] RandomNodeSet;
     bool[] CheckMarkSet;
 
-    // amount of gestures per set
+    // Amount of gestures per set
     int setSize = GameSettings.RythmGameSetSize;
 
     public enum PointArrows
@@ -33,72 +30,74 @@ public class RythmGame : MonoBehaviour
 
     private int currenPointer = 0;
 
-
+    bool isTurn = false;
 
     public RythmGame()
     {
-        NodeSetImages = new RawImage[setSize];
+        NodeSetSprites = new GameObject[setSize];
         RandomNodeSet = new PointArrows[setSize];
-        CheckMarkSet = new bool[setSize]; 
+        CheckMarkSet = new bool[setSize];
     }
-
 
     public void StartRythm(float phaseTime)
     {
         ResetArrowSet();
         succesfullChaneCount = 0;
-        player.Wand.StartRecording(player.GetPlayerNumber(), phaseTime);
+        isTurn = true;
+        //player.Wand.StartRecording(player.GetPlayerNumber(), phaseTime);
     }
+
     public void StopRythm()
     {
+        isTurn = false;
         ClearPreviousNodes();
-        player.Wand.StopRecording();
+        //player.Wand.StopRecording();
     }
+
     public float GetAttackerBoost()
     {
-        float returnvalue = 1;
-
-        returnvalue += succesfullChaneCount * GameSettings.RythmBoostPerSet;
-
-        return returnvalue;
+        float returnValue = 1;
+        returnValue += succesfullChaneCount * GameSettings.RythmBoostPerSet;
+        return returnValue;
     }
 
     private void Start()
     {
-        ResetArrowSet();
+        //ResetArrowSet();
     }
 
     public void Update()
     {
-        PointArrows detectedArrow = PointArrows.nothing;
-        if (Input.GetKeyDown(KeyCode.LeftArrow))
+        if (isTurn)
         {
-            detectedArrow = PointArrows.Left;
-        }
-        if (Input.GetKeyDown(KeyCode.DownArrow))
-        {
-            detectedArrow = PointArrows.Down;
-        }
-        if (Input.GetKeyDown(KeyCode.RightArrow))
-        {
-            detectedArrow = PointArrows.Right;
+            PointArrows detectedArrow = PointArrows.nothing;
+            if (Input.GetKeyDown(KeyCode.LeftArrow))
+            {
+                detectedArrow = PointArrows.Left;
+            }
+            if (Input.GetKeyDown(KeyCode.DownArrow))
+            {
+                detectedArrow = PointArrows.Down;
+            }
+            if (Input.GetKeyDown(KeyCode.RightArrow))
+            {
+                detectedArrow = PointArrows.Right;
+            }
+
+            if (detectedArrow != PointArrows.nothing)
+            {
+                checkForDetectedArrow(detectedArrow);
+            }
         }
 
 
-        if (detectedArrow != PointArrows.nothing)
-        {
-            checkForDetectedArrow(detectedArrow);
-
-        }
     }
-
 
     private void ResetArrowSet()
     {
-
         System.Random rand = new System.Random();
 
-        // fill checkmark and gesture array
+        // Fill checkmark and gesture array
         for (int i = 0; i < setSize; i++)
         {
             RandomNodeSet[i] = (PointArrows)rand.Next(0, 3);
@@ -107,9 +106,8 @@ public class RythmGame : MonoBehaviour
 
         currenPointer = 0;
 
-        // do starting animation and spawn pictures
+        // Do starting animation and spawn sprites
         CreateRandomPointSetAnimation();
-        
     }
 
     private void GoToNextArrow()
@@ -118,7 +116,6 @@ public class RythmGame : MonoBehaviour
         FinishCurrentPointAnimation(currenPointer);
         currenPointer++;
     }
-
 
     public void checkForDetectedArrow(PointArrows detectedPoint)
     {
@@ -138,67 +135,72 @@ public class RythmGame : MonoBehaviour
 
     public void CreateRandomPointSetAnimation()
     {
-        // clear completed nodes if they exists
+        // Clear completed nodes if they exist
         ClearPreviousNodes();
 
-        // create spacing between nodes
-        float spacing = 100f;
+        // Create spacing between nodes
+        float spacing = 1.2f;
         float startX = -((setSize - 1) * spacing) / 2f;
         Vector3 startPosition = new Vector3(startX, 0, 0);
 
-        //spawn in nodes according to with is in the random node set
+        // Spawn in nodes according to what is in the random node set
         for (int i = 0; i < setSize; i++)
         {
-            RawImage nodeImage = null;
+            GameObject nodeSprite = null;
 
             if (RandomNodeSet[i] == PointArrows.Down)
             {
-                nodeImage = Instantiate(DownImagePrefab, NodeContainer);
+                nodeSprite = Instantiate(DownSpritePrefab, NodeContainer);
             }
             else if (RandomNodeSet[i] == PointArrows.Left)
             {
-                nodeImage = Instantiate(LeftImagePrefab, NodeContainer);
+                nodeSprite = Instantiate(LeftSpritePrefab, NodeContainer);
             }
             else if (RandomNodeSet[i] == PointArrows.Right)
             {
-                nodeImage = Instantiate(RightImagePrefab, NodeContainer);
+                nodeSprite = Instantiate(RightSpritePrefab, NodeContainer);
             }
 
-            if (nodeImage != null)
+            if (nodeSprite != null)
             {
-                // place the nodes in the correct positions
-                NodeSetImages[i] = nodeImage;
-                nodeImage.rectTransform.anchoredPosition = startPosition + new Vector3(i * spacing, 0, 0);
+                // Place the nodes in the correct positions
+                NodeSetSprites[i] = nodeSprite;
+                nodeSprite.transform.localPosition = startPosition + new Vector3(0, 0, i * spacing);
 
-                // create a fade in effect
-                nodeImage.color = new Color(nodeImage.color.r, nodeImage.color.g, nodeImage.color.b, 0); 
-                StartCoroutine(FadeIn(nodeImage, 0.3f, i * 0.1f)); 
+                // Create a fade-in effect
+                SpriteRenderer spriteRenderer = nodeSprite.GetComponent<SpriteRenderer>();
+                if (spriteRenderer != null)
+                {
+                    StartCoroutine(FadeIn(spriteRenderer, 0.3f, i * 0.1f));
+                }
             }
         }
     }
 
-    // Fade in effect for spawining nodes
-    private IEnumerator FadeIn(RawImage image, float duration, float delay)
+    // Fade-in effect for spawning nodes
+    private IEnumerator FadeIn(SpriteRenderer sprite, float duration, float delay)
     {
         yield return new WaitForSeconds(delay); // Delay before starting fade-in
 
         float elapsedTime = 0f;
-        Color originalColor = image.color;
+        Color originalColor = sprite.color;
+        originalColor.a = 0;
+        sprite.color = originalColor;
 
         while (elapsedTime < duration)
         {
-            if (image == null)
+            if (sprite == null)
                 yield break;
 
             elapsedTime += Time.deltaTime;
             float alpha = Mathf.Clamp01(elapsedTime / duration);
-            image.color = new Color(originalColor.r, originalColor.g, originalColor.b, alpha);
+            sprite.color = new Color(originalColor.r, originalColor.g, originalColor.b, alpha);
             yield return null;
         }
 
-        if (image != null)
+        if (sprite != null)
         {
-            image.color = new Color(originalColor.r, originalColor.g, originalColor.b, 1); // Ensure final alpha is 1
+            sprite.color = new Color(originalColor.r, originalColor.g, originalColor.b, 1); // Ensure final alpha is 1
         }
     }
 
@@ -212,39 +214,40 @@ public class RythmGame : MonoBehaviour
 
     public void FinishCurrentPointAnimation(int currentPoint)
     {
-        if (NodeSetImages[currentPoint] != null)
+        if (NodeSetSprites[currentPoint] != null)
         {
-            StartCoroutine(FadeOut(NodeSetImages[currentPoint]));
+            SpriteRenderer spriteRenderer = NodeSetSprites[currentPoint].GetComponent<SpriteRenderer>();
+            if (spriteRenderer != null)
+            {
+                StartCoroutine(FadeOut(spriteRenderer));
+            }
         }
     }
 
-
-    private IEnumerator FadeOut(RawImage image)
+    private IEnumerator FadeOut(SpriteRenderer sprite)
     {
-        if (image == null)
+        if (sprite == null)
         {
             yield break;
         }
 
-
         float fadeDuration = 0.5f;
-
-        Color originalColor = image.color;
+        Color originalColor = sprite.color;
 
         for (float t = 0; t < fadeDuration; t += Time.deltaTime)
         {
-            if (image == null)
+            if (sprite == null)
                 yield break;
 
             float normalizedTime = t / fadeDuration;
-            image.color = new Color(originalColor.r, originalColor.g, originalColor.b, 1 - normalizedTime);
+            sprite.color = new Color(originalColor.r, originalColor.g, originalColor.b, 1 - normalizedTime);
             yield return null;
         }
 
-        if (image != null)
+        if (sprite != null)
         {
-            image.color = new Color(originalColor.r, originalColor.g, originalColor.b, 0);
-            Destroy(image.gameObject);
+            sprite.color = new Color(originalColor.r, originalColor.g, originalColor.b, 0);
+            Destroy(sprite.gameObject);
         }
     }
 }
