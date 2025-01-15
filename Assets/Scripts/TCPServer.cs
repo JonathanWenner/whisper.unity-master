@@ -87,7 +87,7 @@ public class TCPServer : MonoBehaviour
             IPAddress local = IPAddress.Parse(IP);
             server = new TcpListener(local, port);
             server.Start();
-            instance.Log("Starting Server at " + IP + ":" + port);
+            instance.Log("Starting Server for " + name + " at " + IP + ":" + port);
 
             // instantiate buffer
             byte[] buffer = new byte[1024];
@@ -96,11 +96,11 @@ public class TCPServer : MonoBehaviour
             // keeps listening for new connections if the old one drops out
             while (true) {
                 instance.Log("Waiting for connection");
-                WandClient1 = server.AcceptTcpClient();
+                client = server.AcceptTcpClient();
                 instance.Log("Connected to " + name);
 
                 data = null;
-                stream = WandClient1.GetStream();
+                stream = client.GetStream();
 
                 int i;
 
