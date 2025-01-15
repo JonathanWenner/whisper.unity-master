@@ -16,6 +16,17 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
     [Header("Lights Move")]
     [SerializeField] Animator[] LightAnimator;
 
+    [Header("FirsStart Visual")]
+    [SerializeField] Animator StartTextPlayer1;
+    [SerializeField] Animator StartTextPlayer2;
+
+    [Header("SpeechBubble Visuals")]
+    [SerializeField] Animator SpeechBubblePlayerOne;
+    [SerializeField] Animator SpeechBubblePlayerTwo;
+
+    [SerializeField] TextMeshPro speechBubbleTextPlayerOne;
+    [SerializeField] TextMeshPro speechBubbleTextPlayerTwo;
+
     [Header("BOOK")]
     [SerializeField] Animator Book;
     [SerializeField] TextMeshPro BookText;
@@ -94,42 +105,49 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
 
     private void OnEnable()
     {
+        Actions.GetLastSaidWord += GetLastSaidWord;
+
         Actions.playerOneTurn += EnablePlayerTurnVisuals;
 
         // Defend
         Actions.StartDefend += InitializeDefend;
         Actions.DefendOutcome += SetDefendingOutcome;
-        //Actions.EndDefend += InitializeDefend;
+        Actions.EndDefend += ActivateSpellAttack;
 
         // Attack
         Actions.StartAttack += InitializeFirstAttack;
         Actions.AttackOutcome += SetAttackOutcome;
         Actions.EndAttack += InitializeAttack;
 
-        Actions.PlayerLoseLife += PlayerLosesLife;
+        //Actions.PlayerLoseLife += PlayerLosesLife;
+
+        Actions.ResetBackToAttack += IsResetToAttack;
+        //Actions.ResetToAttack += StartAttackSucessful;
 
     }
 
     private void OnDisable()
     {
+        Actions.GetLastSaidWord -= GetLastSaidWord;
         Actions.playerOneTurn -= EnablePlayerTurnVisuals;
 
         // Defend
-        //Actions.StartDefend -= InitializeDefend;
+        Actions.StartDefend -= InitializeDefend;
         Actions.DefendOutcome -= SetDefendingOutcome;
-        Actions.EndDefend -= InitializeDefend;
+        Actions.EndDefend -= ActivateSpellAttack;
 
         Actions.StartAttack -= InitializeFirstAttack;
         Actions.AttackOutcome -= SetAttackOutcome;
         Actions.EndAttack -= InitializeAttack;
 
-        Actions.PlayerLoseLife -= PlayerLosesLife;
+        //Actions.PlayerLoseLife -= PlayerLosesLife;
 
 
     }
 
     private bool AttackSucessful = false;
     private bool DefendSucessful = false;
+    private bool isResetToAttack = false;   
 
     private void SetDefendingOutcome(bool Success)
     {
@@ -141,32 +159,65 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
         AttackSucessful = Sucess;
     }
 
+    private void GetLastSaidWord(string word)
+    {
+        LastSaidWord = word;
+    }
+
+    private void IsResetToAttack(bool isReset)
+    {
+        isResetToAttack = isReset;
+    }
+
     bool FirstAttack = true;
 
     private void InitializeDefend()
     {
-        Debug.Log("Defend Sucessful: " + DefendSucessful);
-        Debug.Log("player" + (!_isPlayerOne ? "One" : "Two") + " Defended");
 
+        StartTextPlayer1.SetTrigger("Exit");
+        StartTextPlayer2.SetTrigger("Exit");
 
         // When the first player starts in the first round make sure the sequence start
         if (FirstAttack)
         {
-            FirstAttack = false;
-            StartAttackSucessful();
+            //StartAttackOrDefend(_isPlayerOne, true);
+            StartCoroutine(WaitForTransitionState(_isPlayerOne, true));
 
         }
         else if (DefendSucessful && !FirstAttack)
         {
-           StartAttackSucessful();
-            
+            //player failed, start attack
+            //StartAttackOrDefend(_isPlayerOne, false);   
+            StartCoroutine(WaitForTransitionState(_isPlayerOne, false));
+
         }
-        else
+    }
+
+    private IEnumerator WaitForTransitionState(bool IsPlayerOne, bool Attacking)
+    {
+        float second = GameSettings.TransitionTime;
+
+        yield return new WaitForSeconds(second);
+
+        StartAttackOrDefend(IsPlayerOne, Attacking);
+    }
+
+    private IEnumerator WaitForTransitionStateForAttack()
+    {
+        float second = GameSettings.TransitionTime;
+
+        yield return new WaitForSeconds(second);
+
+        if (!DefendSucessful)
         {
-            Debug.Log("Unsuccesful Defend");
+            StartAttack();
         }
+    }
 
 
+    private void ActivateSpellAttack()
+    {
+        StartCoroutine(WaitForTransitionStateForAttack());
     }
 
     private void InitializeFirstAttack()
@@ -182,14 +233,23 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
         Debug.Log("Attack Sucessful: " + AttackSucessful);
         Debug.Log("player" + (_isPlayerOne ? "One" : "Two") + " Attacked");
 
-        if (AttackSucessful)
+        if (!AttackSucessful)
         {
-            StartAttackSucessful();
+            if (_isPlayerOne)
+            {
+                Book.Play("FAIL_PlayerOne");
+            }
+            else if (!isPlayerOneDefending)
+            {
+                Book.Play("FAIL_PlayerTwo");
+            }
         }
-        else
-        { 
-            Debug.Log("Unsuccesful Attack");
+        else if (AttackSucessful)
+        {
+            //StartAttackOrDefend(_isPlayerOne, true);
+            StartCoroutine(WaitForTransitionState(_isPlayerOne, true));
         }
+
 
     }
 
@@ -201,44 +261,36 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
         if (_isPlayerOne)
         {
             PlayerOneLoseLife.Play("PlayerOneLoseLife");
-
-            if (_PlayerOneLife > 0)
-            {
-                _PlayerOneLife--;
-            }
-            else
-            {
-                // Player 1 lost
-            }
-
-            playerOneLife.text = _PlayerOneLife.ToString();
         }
         else
         {
             PlayerTwoLoseLife.Play("PlayerOneLoseLife");
-
-            if (_PlayerTwoLife > 0)
-            {
-                _PlayerTwoLife--;
-            }
-            else
-            {
-                // Player 2 lost
-            }
-
-            playerTwoLife.text = _PlayerTwoLife.ToString();
         }
+
+        AudioManager.Instance.PlaySound("Ouch", 1f, true);
+
     }
 
 
     public bool _isPlayerOne = false;
 
+    bool firstStart = true;
     private void EnablePlayerTurnVisuals(bool isPlayerOne)
     {
+
+        if (isPlayerOne && firstStart)
+        {
+            firstStart = false;
+            StartTextPlayer1.SetTrigger("Start");
+        }
+        else if (!isPlayerOne && firstStart)
+        {
+            firstStart = false;
+            StartTextPlayer2.SetTrigger("Start");
+        }
+
         playerOneTurnVisuals.SetActive(isPlayerOne);
         playerTwoTurnVisuals.SetActive(!isPlayerOne);
-
-        _isPlayerOne = isPlayerOne;
 
         if (isPlayerOne)
         {
@@ -350,6 +402,8 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
 
             if (isPlayerOne)
             {
+                PlayerLosesLife();
+
                 AudioManager.Instance.PlaySound("FireHit",1f,false);
                 AudioManager.Instance.PlaySound("Shake", 0.7f, true);
                 
@@ -366,6 +420,8 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
             }
             else if (!isPlayerOne)
             {
+                PlayerLosesLife();
+
                 AudioManager.Instance.PlaySound("FrostHit",1f, false);
                 AudioManager.Instance.PlaySound("Shake", 0.7f, true);
 
@@ -382,72 +438,185 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
 
             DustFromImpact.Play();
 
-            PlayerLosesLife();
-
             Destroy(projectile);
         }
     }
 
+    private void SpeechBubbleActivate(bool IsPlayerOne, bool attacking)
+    {
+        if (IsPlayerOne && attacking)
+        {
+            string newText = ("I cast" + LastSaidWord + "!");
+            speechBubbleTextPlayerOne.text = newText;
+            SpeechBubblePlayerOne.Play("SpeechBubblePlayerOne");
+        }
+        else if (!IsPlayerOne && attacking)
+        {
+            string newText = ("I cast" + LastSaidWord + "!");
+            speechBubbleTextPlayerTwo.text = newText;
+            SpeechBubblePlayerTwo.Play("SpeechBubblePlayerTwo");
+        }
+        else if (IsPlayerOne && !attacking)
+        {
+            string newText = ("I cast" + LastSaidWord + "!");
+            speechBubbleTextPlayerTwo.text = newText;
+            SpeechBubblePlayerTwo.Play("SpeechBubblePlayerTwo");
+        }
+        else if (!IsPlayerOne && !attacking)
+        {
+            string newText = ("I cast" + LastSaidWord + "!");
+            speechBubbleTextPlayerOne.text = newText;
+            SpeechBubblePlayerOne.Play("SpeechBubblePlayerOne");
+        }
+
+    }
+
     private Coroutine attackCoroutinePlayerOne;
     private Coroutine attackCoroutinePlayerTwo;
-    public void StartAttackSucessful()
+    public void StartAttackOrDefend(bool IsPlayerOne, bool attacking)
     {
 
-        if (!_isPlayerOne)
+        SpeechBubbleActivate(IsPlayerOne, attacking);
+
+        if (FirstAttack && IsPlayerOne && attacking)
         {
-            if (attackCoroutinePlayerOne != null)
-            {
-                StopCoroutine(attackCoroutinePlayerOne);
-            }
-            if (attackCoroutinePlayerTwo != null)
-            {
-                StopCoroutine(attackCoroutinePlayerTwo);
-            }
+            Book.SetTrigger("OpenBookPlayerTwo");
+            FirstAttack = false;
+
+            attackCoroutinePlayerOne = StartCoroutine(StartAttackSequence(IsPlayerOne));
+        }
+
+        //Player 1 Defend
+
+        else if (!FirstAttack && IsPlayerOne && !attacking)
+        {
+            Debug.Log("PLAYER ONE DEFENDED?????");
+
+            if (attackCoroutinePlayerOne != null) StopCoroutine(attackCoroutinePlayerOne);
+            if (attackCoroutinePlayerTwo != null) StopCoroutine(attackCoroutinePlayerTwo);
+
+            ResetPlayerVisualsForPlayerOne(true);
+            Debug.Log("RESET!! player" + (IsPlayerOne ? "one" : "Two"));
+
+            attackCoroutinePlayerTwo = StartCoroutine(StartAttackSequence(false));
+
+            Book.Play("CloseBookPlayerTwo");
+
+            FrostText.text = LastSaidWord;
+            FrostTextParticles.Play();
+        }
+
+        // Player 1 attack
+
+        else if (!FirstAttack && IsPlayerOne && attacking)
+        {
+            Debug.Log("PLAYER TWO DEFENDDED?????");
+
+            if (attackCoroutinePlayerOne != null) StopCoroutine(attackCoroutinePlayerOne);
+            if (attackCoroutinePlayerTwo != null) StopCoroutine(attackCoroutinePlayerTwo);
+
+            Debug.Log("RESET!! player" + (IsPlayerOne ? "one" : "Two"));
 
             ResetPlayerVisualsForPlayerOne(false);
 
             attackCoroutinePlayerOne = StartCoroutine(StartAttackSequence(true));
-            AudioManager.Instance.PlaySound("MagicCircle", 0.8f, true);
 
+            Book.Play("CloseBookPlayerOne");
 
-
-            if (isReversing)
-                ReverseAttackSequence();
+            FireText.text = LastSaidWord;
+            FireTextParticles.Play();
         }
-        else if (_isPlayerOne)
+
+        if (FirstAttack && !IsPlayerOne && attacking)
         {
-            if (attackCoroutinePlayerTwo != null)
-            {
-                StopCoroutine(attackCoroutinePlayerTwo);
-            }
-            if (attackCoroutinePlayerOne != null)
-            {
-                StopCoroutine(attackCoroutinePlayerOne);
-            }
+            Book.SetTrigger("OpenBookPlayerOne");
+            FirstAttack = false;
+
+            attackCoroutinePlayerTwo = StartCoroutine(StartAttackSequence(IsPlayerOne));
+        }
+
+        // Player two defend
+
+        else if (!FirstAttack && !IsPlayerOne && !attacking)
+        {
+            Debug.Log("PLAYER TWO DEFENDDED?????");
+
+            if (attackCoroutinePlayerOne != null) StopCoroutine(attackCoroutinePlayerOne);
+            if (attackCoroutinePlayerTwo != null) StopCoroutine(attackCoroutinePlayerTwo);
+
+            Debug.Log("RESET!! player" + (IsPlayerOne ? "one" : "Two"));
+
+            ResetPlayerVisualsForPlayerOne(false);
+
+            attackCoroutinePlayerOne = StartCoroutine(StartAttackSequence(true));
+
+            Book.Play("CloseBookPlayerOne");
+
+            FireText.text = LastSaidWord;
+            FireTextParticles.Play();
+        }
+
+        // player two attack
+
+        else if (!FirstAttack && !IsPlayerOne && attacking)
+        {
+            Debug.Log("PLAYER ONE DEFENDED?????");
+
+            if (attackCoroutinePlayerOne != null) StopCoroutine(attackCoroutinePlayerOne);
+            if (attackCoroutinePlayerTwo != null) StopCoroutine(attackCoroutinePlayerTwo);
 
             ResetPlayerVisualsForPlayerOne(true);
+            Debug.Log("RESET!! player" + (IsPlayerOne ? "one" : "Two"));
 
             attackCoroutinePlayerTwo = StartCoroutine(StartAttackSequence(false));
-            AudioManager.Instance.PlaySound("MagicCircle", 0.8f, true);
 
+            Book.Play("CloseBookPlayerTwo");
 
-            if (isReversing)
+            FrostText.text = LastSaidWord;
+            FrostTextParticles.Play();
+        }
+
+        Debug.Log(LastSaidWord);
+
+        //Get the last letter in trhis string of bigletter
+
+        BigLetter.text = LastSaidWord.Substring(LastSaidWord.Length - 1, 1);
+
+        BookText.text = LastSaidWord;
+
+        // Play audio
+        AudioManager.Instance.PlaySound("MagicCircle", 0.8f, true);
+
+        if (isReversing)
+        { 
             ReverseAttackSequence();
         }
 
     }
 
+    private void StartSuccessfulAttack(bool IsPlayerOne)
+    { 
+        
+    }
+
     private void ResetPlayerVisualsForPlayerOne(bool isPlayerOne)
     {
         if (isPlayerOne)
-        { 
+        {
             ActivationCircle.GetComponent<SpriteRenderer>().color = OriginalColor;
             SpellActivationCircle.fillAmount = 0;
+            AttackOnStandbyEffectPlayerTwo.Stop();
+
+            Debug.Log("ResetVisuals for" + (isPlayerOne ? "one" : "Two"));
+
         }
         else if (!isPlayerOne)
         {
             ActivationCircle1.GetComponent<SpriteRenderer>().color = OriginalColor1;
             SpellActivationCircle1.fillAmount = 0;
+            AttackOnStandbyEffectPlayerOne.Stop();
+
+            Debug.Log("ResetVisuals for" + (isPlayerOne ? "one" : "Two"));
         }
     }
 
@@ -468,65 +637,17 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
         ResetPlayerVisualsForPlayerOne(false);
     }
 
-    private string LastSaidWord = "I am gay";
+    private string LastSaidWord;
+
+    private float GestureSpeed = 1f;
+
+
+    [Header("Attack On Standby effects")]
+    [SerializeField] private ParticleSystem AttackOnStandbyEffectPlayerOne;
+    [SerializeField] private ParticleSystem AttackOnStandbyEffectPlayerTwo;
 
     private IEnumerator StartAttackSequence(bool isPlayerOne)
     {
-        LastSaidWord = stateManager.getLastSayedWord();
-
-        if (isPlayerOne)
-        {
-            Debug.Log("Player One is defending.");
-            if (stateManager.getLastSayedWord() == null)
-            {
-                Debug.Log("No word was said");
-
-                FireText.text = "I am gay";
-                BookText.text = "I am gay";
-                BigLetter.text = "I";
-
-            }
-            else
-            {
-                FireText.text = stateManager.getLastSayedWord();
-                BookText.text = stateManager.getLastSayedWord();
-
-                string FirstLetter = stateManager.getLastSayedWord().Substring(0, 1);
-
-                BigLetter.text = FirstLetter;
-            }
-
-            Book.Play("OpenBook");
-
-            FireTextParticles.Play();
-            Debug.Log("Set Word to:" + stateManager.gottenWord);
-        }
-        else
-        {
-
-            Debug.Log("Player One is defending.");
-            if (stateManager.getLastSayedWord() == null)
-            {
-                Debug.Log("No word was said");
-
-                FrostText.text = "I am gay";
-                BookText.text = "I am gay";
-                BigLetter.text = "I";
-            }
-            else
-            {
-                FrostText.text = stateManager.getLastSayedWord();
-                BookText.text = stateManager.getLastSayedWord();
-
-                string FirstLetter = stateManager.getLastSayedWord().Substring(0, 1);
-
-                BigLetter.text = FirstLetter;
-            }
-
-            Book.Play("OpenBook");
-
-            FrostTextParticles.Play();
-        }
 
         float elapsedTime = 0f;
         float duration = GameSettings.DefendStateTime;
@@ -545,7 +666,7 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
                 }
                 else
                 {
-                    elapsedTime += Time.deltaTime;
+                    elapsedTime += Time.deltaTime * GestureSpeed;
                 }
 
                 // Clamp elapsedTime to stay within bounds
@@ -564,57 +685,42 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
                     UpdateVisuals(ActivationCircle1, OriginalColor1, SpellActivationCircle1, progress);
                 }
 
-                // Debug logging
                 if (progress >= 1f && !hasLoggedFilled)
                 {
                     Debug.Log($"Circle is completely filled for Player {(isPlayerOne ? "One" : "Two")}.");
                     hasLoggedFilled = true;
-                    hasLoggedEmpty = false; // Reset for when reversing
-
-                    if (isPlayerOne)
-                    {
-                        SpellActivation.Play();
-                        yield return new WaitForSeconds(0.5f);
-                        AudioManager.Instance.PlaySound("FireFly", 1f, false);
-                        AudioManager.Instance.PlaySound("MagicCircleCompleted", 1f, true);
-                        FireProjectile(true);
-
-                        Book.Play("CloseBook");
-                    }
-                    else
-                    {
-                        SpellActivation2.Play();
-                        yield return new WaitForSeconds(0.5f);
-                        AudioManager.Instance.PlaySound("FrostFly", 1f, false);
-                        AudioManager.Instance.PlaySound("MagicCircleCompleted", 1f, true);
-                        FireProjectile(false);
-
-                        Book.Play("CloseBook");
-                    }
-
-                    ReverseAttackSequence();
+                    hasLoggedEmpty = false;
+                    HandleAttackCompletion(isPlayerOne);
                 }
                 else if (progress <= 0f && !hasLoggedEmpty)
                 {
                     Debug.Log($"Circle is reset to empty for Player {(isPlayerOne ? "One" : "Two")}.");
                     hasLoggedEmpty = true;
-                    hasLoggedFilled = false; // Reset for when filling again
+                    hasLoggedFilled = false;
                 }
+
+                // Wait for the next frame
+                yield return null;
             }
-
-            // Wait for the next frame
-            yield return null;
-        }
-
-        // If the sequence finishes naturally
-        if (!isReversing && elapsedTime >= duration)
-        {
-            Debug.Log("Attack sequence completed.");
         }
     }
 
-    // Helper to update visuals
-    private void UpdateVisuals(GameObject circleObject, Color originalColor, UnityEngine.UI.Image fillCircle, float progress)
+    private void HandleAttackCompletion(bool isPlayerOne)
+    {
+        if (isPlayerOne)
+        {
+            isPlayerOneDefending = true;
+            AttackOnStandbyEffectPlayerTwo.Play();
+        }
+        else
+        {
+            isPlayerOneDefending = false;
+            AttackOnStandbyEffectPlayerOne.Play();
+        }
+    }
+
+        // Helper to update visuals
+        private void UpdateVisuals(GameObject circleObject, Color originalColor, UnityEngine.UI.Image fillCircle, float progress)
     {
         SpriteRenderer spriteRenderer = circleObject.GetComponent<SpriteRenderer>();
         float newAlpha = Mathf.Lerp(0, 1, progress);
@@ -638,8 +744,55 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
         isReversing = !isReversing;
     }
 
+    public bool isPlayerOneDefending = false;
+
+    public void StartAttack()
+    {
+
+        if (!isPlayerOneDefending)
+        {
+            ActivateAttackAgainstPlayerOne();
+        }
+        else
+        {
+            ActivateAttackAgainstPlayerTwo();
+        }
+    }
+    public void ActivateAttackAgainstPlayerOne()
+    {
+        AttackOnStandbyEffectPlayerOne.Stop();
+        AttackOnStandbyEffectPlayerTwo.Stop();
+        SpellActivation2.Play();
+        AudioManager.Instance.PlaySound("FrostFly", 1f, false);
+        AudioManager.Instance.PlaySound("MagicCircleCompleted", 1f, true);
+        FireProjectile(false);
+        Book.Play("CloseBookPlayerOneExtra");
+        ReverseAttackSequence();
+    }
+
+    public void ActivateAttackAgainstPlayerTwo()
+    {
+        AttackOnStandbyEffectPlayerOne.Stop();
+        AttackOnStandbyEffectPlayerTwo.Stop();
+
+        SpellActivation.Play();
+        AudioManager.Instance.PlaySound("FireFly", 1f, false);
+        AudioManager.Instance.PlaySound("MagicCircleCompleted", 1f, true);
+        FireProjectile(true);
+        Book.Play("CloseBookPlayerOneExtra");
+        ReverseAttackSequence();
+    }
+
     private void Update()
     {
+
+
+        _isPlayerOne = stateManager.isPlayerOneTurn;
+
+        playerOneLife.text = stateManager.player1.GetLives().ToString();
+
+        playerTwoLife.text = stateManager.player2.GetLives().ToString();
+
         //if (isPlayerOneTurn)
         //{
         //    if (timer > 0)

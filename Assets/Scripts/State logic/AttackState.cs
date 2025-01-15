@@ -38,7 +38,8 @@ public class AttackState : IState
     public void Exit()
     {
 
-        stateManager.setLastSayedWord(answerdWord); 
+
+
     }
 
 
@@ -94,12 +95,19 @@ public class AttackState : IState
         {
             //unsuccesfull attack
 
-            //Actions.AttackOutcome(false);
+            stateManager.setLastSayedWord(answerdWord);
 
-            //Actions.EndAttack?.Invoke();
+            Debug.Log("last sayed word: " + stateManager.getLastSayedWord());
+
+            Actions.GetLastSaidWord?.Invoke(stateManager.getLastSayedWord());
+
+            Actions.AttackOutcome(false);
+
+            Actions.EndAttack?.Invoke();
 
 
             attacker.DamagePlayer();
+            stateManager.SwitchPlayerTurn();                                                    // switch the player turn
             stateManager.CheckForWinner();
             stateManager.TransitionToNextState(true);
 
@@ -108,9 +116,15 @@ public class AttackState : IState
         {
             // succesfull attack
 
-            //Actions.AttackOutcome(true);
+            stateManager.setLastSayedWord(answerdWord);
 
-            //Actions.EndAttack?.Invoke();
+            Debug.Log("last sayed word: " + stateManager.getLastSayedWord());
+
+            Actions.GetLastSaidWord?.Invoke(stateManager.getLastSayedWord());
+
+            Actions.AttackOutcome(true);
+
+            Actions.EndAttack?.Invoke();
 
             stateManager.setLastSayedWord(stateManager.Illegalwordlist.CleanWord(answerdWord)); // cleanword and change last set word into it
             stateManager.SwitchPlayerTurn();                                                    // switch the player turn

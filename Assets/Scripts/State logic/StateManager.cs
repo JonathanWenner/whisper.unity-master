@@ -25,7 +25,7 @@ public class StateManager : MonoBehaviour
     public StateFactory stateFactory;
 
     string lastSayedWord;
-    bool isPlayerOneTurn = true;
+    public bool isPlayerOneTurn = true;
 
     float transitionTime = GameSettings.TransitionTime;
 
