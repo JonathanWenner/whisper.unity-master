@@ -43,7 +43,7 @@ public class DefendState : IState
 
     public void Exit()
     {
-        stateManager.setLastSayedWord(answerdWord);
+
     }
 
 
@@ -99,6 +99,12 @@ public class DefendState : IState
         {
             // unsuccesfull defend
 
+            stateManager.setLastSayedWord(answerdWord);
+
+            Debug.Log("last sayed word: " + stateManager.getLastSayedWord());
+
+            Actions.GetLastSaidWord?.Invoke(stateManager.getLastSayedWord());
+
             Actions.DefendOutcome(false);
 
             Actions.EndDefend?.Invoke();
@@ -110,6 +116,12 @@ public class DefendState : IState
         }
         else
         {
+            stateManager.setLastSayedWord(answerdWord);
+
+            Debug.Log("last sayed word: " + stateManager.getLastSayedWord());
+
+            Actions.GetLastSaidWord?.Invoke(stateManager.getLastSayedWord());
+
             Actions.DefendOutcome(true);
 
             Actions.EndDefend?.Invoke();

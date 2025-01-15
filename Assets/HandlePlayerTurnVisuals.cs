@@ -16,6 +16,17 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
     [Header("Lights Move")]
     [SerializeField] Animator[] LightAnimator;
 
+    [Header("FirsStart Visual")]
+    [SerializeField] Animator StartTextPlayer1;
+    [SerializeField] Animator StartTextPlayer2;
+
+    [Header("SpeechBubble Visuals")]
+    [SerializeField] Animator SpeechBubblePlayerOne;
+    [SerializeField] Animator SpeechBubblePlayerTwo;
+
+    [SerializeField] TextMeshPro speechBubbleTextPlayerOne;
+    [SerializeField] TextMeshPro speechBubbleTextPlayerTwo;
+
     [Header("BOOK")]
     [SerializeField] Animator Book;
     [SerializeField] TextMeshPro BookText;
@@ -94,6 +105,8 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
 
     private void OnEnable()
     {
+        Actions.GetLastSaidWord += GetLastSaidWord;
+
         Actions.playerOneTurn += EnablePlayerTurnVisuals;
 
         // Defend
@@ -106,7 +119,7 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
         Actions.AttackOutcome += SetAttackOutcome;
         Actions.EndAttack += InitializeAttack;
 
-        Actions.PlayerLoseLife += PlayerLosesLife;
+        //Actions.PlayerLoseLife += PlayerLosesLife;
 
         Actions.ResetBackToAttack += IsResetToAttack;
         //Actions.ResetToAttack += StartAttackSucessful;
@@ -115,6 +128,7 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
 
     private void OnDisable()
     {
+        Actions.GetLastSaidWord -= GetLastSaidWord;
         Actions.playerOneTurn -= EnablePlayerTurnVisuals;
 
         // Defend
@@ -126,7 +140,7 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
         Actions.AttackOutcome -= SetAttackOutcome;
         Actions.EndAttack -= InitializeAttack;
 
-        Actions.PlayerLoseLife -= PlayerLosesLife;
+        //Actions.PlayerLoseLife -= PlayerLosesLife;
 
 
     }
@@ -145,6 +159,11 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
         AttackSucessful = Sucess;
     }
 
+    private void GetLastSaidWord(string word)
+    {
+        LastSaidWord = word;
+    }
+
     private void IsResetToAttack(bool isReset)
     {
         isResetToAttack = isReset;
@@ -155,27 +174,50 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
     private void InitializeDefend()
     {
 
+        StartTextPlayer1.SetTrigger("Exit");
+        StartTextPlayer2.SetTrigger("Exit");
 
         // When the first player starts in the first round make sure the sequence start
         if (FirstAttack)
         {
-            StartAttackOrDefend(_isPlayerOne, true);
+            //StartAttackOrDefend(_isPlayerOne, true);
+            StartCoroutine(WaitForTransitionState(_isPlayerOne, true));
 
         }
         else if (DefendSucessful && !FirstAttack)
         {
             //player failed, start attack
-            StartAttackOrDefend(_isPlayerOne, false);        
+            //StartAttackOrDefend(_isPlayerOne, false);   
+            StartCoroutine(WaitForTransitionState(_isPlayerOne, false));
+
+        }
+    }
+
+    private IEnumerator WaitForTransitionState(bool IsPlayerOne, bool Attacking)
+    {
+        float second = GameSettings.TransitionTime;
+
+        yield return new WaitForSeconds(second);
+
+        StartAttackOrDefend(IsPlayerOne, Attacking);
+    }
+
+    private IEnumerator WaitForTransitionStateForAttack()
+    {
+        float second = GameSettings.TransitionTime;
+
+        yield return new WaitForSeconds(second);
+
+        if (!DefendSucessful)
+        {
+            StartAttack();
         }
     }
 
 
     private void ActivateSpellAttack()
     {
-        if (!DefendSucessful)
-        {
-            StartAttack();
-        }
+        StartCoroutine(WaitForTransitionStateForAttack());
     }
 
     private void InitializeFirstAttack()
@@ -204,7 +246,8 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
         }
         else if (AttackSucessful)
         {
-            StartAttackOrDefend(_isPlayerOne, true);
+            //StartAttackOrDefend(_isPlayerOne, true);
+            StartCoroutine(WaitForTransitionState(_isPlayerOne, true));
         }
 
 
@@ -218,44 +261,34 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
         if (_isPlayerOne)
         {
             PlayerOneLoseLife.Play("PlayerOneLoseLife");
-
-            AudioManager.Instance.PlaySound("Ouch", 1f, true);
-
-            if (_PlayerOneLife > 0)
-            {
-                _PlayerOneLife--;
-            }
-            else
-            {
-                // Player 1 lost
-            }
-
-            playerOneLife.text = _PlayerOneLife.ToString();
         }
         else
         {
             PlayerTwoLoseLife.Play("PlayerOneLoseLife");
-
-            AudioManager.Instance.PlaySound("Ouch", 1f, true);
-
-            if (_PlayerTwoLife > 0)
-            {
-                _PlayerTwoLife--;
-            }
-            else
-            {
-                // Player 2 lost
-            }
-
-            playerTwoLife.text = _PlayerTwoLife.ToString();
         }
+
+        AudioManager.Instance.PlaySound("Ouch", 1f, true);
+
     }
 
 
     public bool _isPlayerOne = false;
 
+    bool firstStart = true;
     private void EnablePlayerTurnVisuals(bool isPlayerOne)
     {
+
+        if (isPlayerOne && firstStart)
+        {
+            firstStart = false;
+            StartTextPlayer1.SetTrigger("Start");
+        }
+        else if (!isPlayerOne && firstStart)
+        {
+            firstStart = false;
+            StartTextPlayer2.SetTrigger("Start");
+        }
+
         playerOneTurnVisuals.SetActive(isPlayerOne);
         playerTwoTurnVisuals.SetActive(!isPlayerOne);
 
@@ -369,6 +402,8 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
 
             if (isPlayerOne)
             {
+                PlayerLosesLife();
+
                 AudioManager.Instance.PlaySound("FireHit",1f,false);
                 AudioManager.Instance.PlaySound("Shake", 0.7f, true);
                 
@@ -385,6 +420,8 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
             }
             else if (!isPlayerOne)
             {
+                PlayerLosesLife();
+
                 AudioManager.Instance.PlaySound("FrostHit",1f, false);
                 AudioManager.Instance.PlaySound("Shake", 0.7f, true);
 
@@ -405,17 +442,42 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
         }
     }
 
-    private string GetValidWord(string word, string fallback = "No word")
+    private void SpeechBubbleActivate(bool IsPlayerOne, bool attacking)
     {
-        return string.IsNullOrEmpty(word) ? fallback : word;
+        if (IsPlayerOne && attacking)
+        {
+            string newText = ("I cast" + LastSaidWord + "!");
+            speechBubbleTextPlayerOne.text = newText;
+            SpeechBubblePlayerOne.Play("SpeechBubblePlayerOne");
+        }
+        else if (!IsPlayerOne && attacking)
+        {
+            string newText = ("I cast" + LastSaidWord + "!");
+            speechBubbleTextPlayerTwo.text = newText;
+            SpeechBubblePlayerTwo.Play("SpeechBubblePlayerTwo");
+        }
+        else if (IsPlayerOne && !attacking)
+        {
+            string newText = ("I cast" + LastSaidWord + "!");
+            speechBubbleTextPlayerTwo.text = newText;
+            SpeechBubblePlayerTwo.Play("SpeechBubblePlayerTwo");
+        }
+        else if (!IsPlayerOne && !attacking)
+        {
+            string newText = ("I cast" + LastSaidWord + "!");
+            speechBubbleTextPlayerOne.text = newText;
+            SpeechBubblePlayerOne.Play("SpeechBubblePlayerOne");
+        }
+
     }
 
     private Coroutine attackCoroutinePlayerOne;
     private Coroutine attackCoroutinePlayerTwo;
     public void StartAttackOrDefend(bool IsPlayerOne, bool attacking)
     {
-        LastSaidWord = GetValidWord(stateManager.getLastSayedWord());
-      
+
+        SpeechBubbleActivate(IsPlayerOne, attacking);
+
         if (FirstAttack && IsPlayerOne && attacking)
         {
             Book.SetTrigger("OpenBookPlayerTwo");
@@ -423,7 +485,10 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
 
             attackCoroutinePlayerOne = StartCoroutine(StartAttackSequence(IsPlayerOne));
         }
-        else if(!FirstAttack && IsPlayerOne && !attacking)
+
+        //Player 1 Defend
+
+        else if (!FirstAttack && IsPlayerOne && !attacking)
         {
             Debug.Log("PLAYER ONE DEFENDED?????");
 
@@ -438,8 +503,28 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
             Book.Play("CloseBookPlayerTwo");
 
             FrostText.text = LastSaidWord;
-            BigLetter.text = LastSaidWord.Substring(0, 1);
             FrostTextParticles.Play();
+        }
+
+        // Player 1 attack
+
+        else if (!FirstAttack && IsPlayerOne && attacking)
+        {
+            Debug.Log("PLAYER TWO DEFENDDED?????");
+
+            if (attackCoroutinePlayerOne != null) StopCoroutine(attackCoroutinePlayerOne);
+            if (attackCoroutinePlayerTwo != null) StopCoroutine(attackCoroutinePlayerTwo);
+
+            Debug.Log("RESET!! player" + (IsPlayerOne ? "one" : "Two"));
+
+            ResetPlayerVisualsForPlayerOne(false);
+
+            attackCoroutinePlayerOne = StartCoroutine(StartAttackSequence(true));
+
+            Book.Play("CloseBookPlayerOne");
+
+            FireText.text = LastSaidWord;
+            FireTextParticles.Play();
         }
 
         if (FirstAttack && !IsPlayerOne && attacking)
@@ -450,7 +535,7 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
             attackCoroutinePlayerTwo = StartCoroutine(StartAttackSequence(IsPlayerOne));
         }
 
-        // If player two is defending or Attacking
+        // Player two defend
 
         else if (!FirstAttack && !IsPlayerOne && !attacking)
         {
@@ -468,9 +553,34 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
             Book.Play("CloseBookPlayerOne");
 
             FireText.text = LastSaidWord;
-            BigLetter.text = LastSaidWord.Substring(0, 1);
             FireTextParticles.Play();
         }
+
+        // player two attack
+
+        else if (!FirstAttack && !IsPlayerOne && attacking)
+        {
+            Debug.Log("PLAYER ONE DEFENDED?????");
+
+            if (attackCoroutinePlayerOne != null) StopCoroutine(attackCoroutinePlayerOne);
+            if (attackCoroutinePlayerTwo != null) StopCoroutine(attackCoroutinePlayerTwo);
+
+            ResetPlayerVisualsForPlayerOne(true);
+            Debug.Log("RESET!! player" + (IsPlayerOne ? "one" : "Two"));
+
+            attackCoroutinePlayerTwo = StartCoroutine(StartAttackSequence(false));
+
+            Book.Play("CloseBookPlayerTwo");
+
+            FrostText.text = LastSaidWord;
+            FrostTextParticles.Play();
+        }
+
+        Debug.Log(LastSaidWord);
+
+        //Get the last letter in trhis string of bigletter
+
+        BigLetter.text = LastSaidWord.Substring(LastSaidWord.Length - 1, 1);
 
         BookText.text = LastSaidWord;
 
@@ -599,12 +709,12 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
     {
         if (isPlayerOne)
         {
-            isPlayerOneDefending = false;
+            isPlayerOneDefending = true;
             AttackOnStandbyEffectPlayerTwo.Play();
         }
         else
         {
-            isPlayerOneDefending = true;
+            isPlayerOneDefending = false;
             AttackOnStandbyEffectPlayerOne.Play();
         }
     }
@@ -651,20 +761,25 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
     public void ActivateAttackAgainstPlayerOne()
     {
         AttackOnStandbyEffectPlayerOne.Stop();
+        AttackOnStandbyEffectPlayerTwo.Stop();
         SpellActivation2.Play();
         AudioManager.Instance.PlaySound("FrostFly", 1f, false);
         AudioManager.Instance.PlaySound("MagicCircleCompleted", 1f, true);
         FireProjectile(false);
+        Book.Play("CloseBookPlayerOneExtra");
         ReverseAttackSequence();
     }
 
     public void ActivateAttackAgainstPlayerTwo()
     {
         AttackOnStandbyEffectPlayerOne.Stop();
+        AttackOnStandbyEffectPlayerTwo.Stop();
+
         SpellActivation.Play();
         AudioManager.Instance.PlaySound("FireFly", 1f, false);
         AudioManager.Instance.PlaySound("MagicCircleCompleted", 1f, true);
         FireProjectile(true);
+        Book.Play("CloseBookPlayerOneExtra");
         ReverseAttackSequence();
     }
 
@@ -673,6 +788,10 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
 
 
         _isPlayerOne = stateManager.isPlayerOneTurn;
+
+        playerOneLife.text = stateManager.player1.GetLives().ToString();
+
+        playerTwoLife.text = stateManager.player2.GetLives().ToString();
 
         //if (isPlayerOneTurn)
         //{

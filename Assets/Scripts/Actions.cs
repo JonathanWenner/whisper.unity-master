@@ -31,5 +31,7 @@ public static class Actions
     public static Action<bool> ResetBackToAttack;
     public static Action ResetToAttack;
 
+    public static Action<string> GetLastSaidWord;
+
 
 }
