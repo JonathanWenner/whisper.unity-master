@@ -29,14 +29,14 @@ public class DefendState : IState
         Actions.StartDefend?.Invoke();
 
 
-        attacker.rythm.StartRythm(stateTime);
+        //attacker.rythm.StartRythm(stateTime);
         defender.SpeechRecognitionController.Click();
         stateManager.StartCoroutine(WaitForWord());
     }
 
     public void Update()
     {
-        attackerBoost = attacker.rythm.GetAttackerBoost();
+        //attackerBoost = attacker.rythm.GetAttackerBoost();
         stateManager.uiHandler.drawTimer(stateManager.timer);
         stateManager.timer -= Time.deltaTime * attackerBoost;
     }
@@ -93,7 +93,7 @@ public class DefendState : IState
         else
             answerdWord = "";
 
-        attacker.rythm.StopRythm();
+        //attacker.rythm.StopRythm();
 
         if (string.IsNullOrEmpty(answerdWord) || stateManager.Illegalwordlist.isInList(answerdWord) || !true)
         {

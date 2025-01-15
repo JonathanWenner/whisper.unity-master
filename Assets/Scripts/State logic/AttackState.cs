@@ -94,9 +94,9 @@ public class AttackState : IState
         {
             //unsuccesfull attack
 
-            //Actions.AttackOutcome(false);
+            Actions.AttackOutcome(false);
 
-            //Actions.EndAttack?.Invoke();
+            Actions.EndAttack?.Invoke();
 
 
             attacker.DamagePlayer();
@@ -111,9 +111,9 @@ public class AttackState : IState
         {
             // succesfull attack
 
-            //Actions.AttackOutcome(true);
+            Actions.AttackOutcome(true);
 
-            //Actions.EndAttack?.Invoke();
+            Actions.EndAttack?.Invoke();
 
             stateManager.setLastSayedWord(stateManager.Illegalwordlist.CleanWord(answerdWord)); // cleanword and change last set word into it
             stateManager.SwitchPlayerTurn();                                                    // switch the player turn
