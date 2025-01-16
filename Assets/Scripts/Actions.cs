@@ -4,6 +4,9 @@ using System;
 public static class Actions
 {
 
+    public static Action<bool> PlayerOneWins;
+    public static Action WinningTheGame;
+
     // Gesture phase
 
     public static Action<bool> isGesturePhase;

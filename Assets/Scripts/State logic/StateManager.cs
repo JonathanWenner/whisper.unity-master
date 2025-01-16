@@ -117,16 +117,27 @@ public class StateManager : MonoBehaviour
 
     public void CheckForWinner()
     {
+
+
         if (player1.GetLives() <= 0)
         {
-            Debug.Log("player 1 wins");
+            Debug.Log("player 2 wins");
             //ADD GO TO WIN SCREEN P1
+
+            Actions.PlayerOneWins?.Invoke(false);
+            Actions.WinningTheGame?.Invoke();
+
         }
         else if (player2.GetLives() <= 0)
         {
-            Debug.Log("player 2 wins");
+            Debug.Log("player 1 wins");
             //ADD GO TO WIN SCREEN P2
+
+            Actions.PlayerOneWins?.Invoke(true);
+            Actions.WinningTheGame?.Invoke();
+
         }
+
     }
 
     public Player GetPlayerTurn()

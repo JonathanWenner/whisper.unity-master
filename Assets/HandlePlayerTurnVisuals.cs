@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Playables;
 using UnityEngine.Rendering;
 using UnityEngine.UI;
 
@@ -74,6 +75,57 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
     [SerializeField] TextMeshPro TextExplosionText2;
 
 
+    [Header("Winning")]
+    [SerializeField] ParticleSystem WinParticles;
+    [SerializeField] PlayableDirector WinDirector;
+    [SerializeField] Color PlayerOne;
+    [SerializeField] Color PlayerTwo;
+    [SerializeField] Image Hat;
+    [SerializeField] Image Body;
+    [SerializeField] TextMeshProUGUI WinningText;
+    [SerializeField] TextMeshProUGUI WinningText2;
+
+    private void StartWin()
+    { 
+        StartCoroutine(WaitForWinAnimation());
+    }
+
+    private IEnumerator WaitForWinAnimation()
+    {
+        yield return new WaitForSeconds(3f);
+
+        Winning();
+    }
+
+    private void Winning()
+    {
+        if (PlayerOneWins)
+        { 
+            Hat.color = PlayerOne;
+            Body.color = PlayerOne;
+
+            WinningText.text = "Player One Wins!";
+            WinningText2.text = "Player One Wins!";
+        }
+        else
+        {
+            Hat.color = PlayerTwo;
+            Body.color = PlayerTwo;
+
+            WinningText.text = "Player Two Wins!";
+            WinningText2.text = "Player Two Wins!";
+        }
+
+        WinDirector.Play();
+
+        WinParticles.Play();
+    }
+
+    private bool PlayerOneWins = false;
+    private void WhoWins(bool playerOneWins)
+    {
+        PlayerOneWins = playerOneWins;
+    }
 
 
     // life 
@@ -105,6 +157,12 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
 
     private void OnEnable()
     {
+        // Win
+
+        Actions.WinningTheGame += StartWin;
+        Actions.PlayerOneWins += WhoWins;
+
+
         Actions.GetLastSaidWord += GetLastSaidWord;
 
         Actions.playerOneTurn += EnablePlayerTurnVisuals;
@@ -281,12 +339,12 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
         if (isPlayerOne && firstStart)
         {
             firstStart = false;
-            StartTextPlayer1.SetTrigger("Start");
+            StartTextPlayer1.Play("StartTextPlayerOne");
         }
         else if (!isPlayerOne && firstStart)
         {
             firstStart = false;
-            StartTextPlayer2.SetTrigger("Start");
+            StartTextPlayer2.Play("StartTextPlayerTwo");
         }
 
         playerOneTurnVisuals.SetActive(isPlayerOne);
@@ -749,7 +807,7 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
     public void StartAttack()
     {
 
-        if (!isPlayerOneDefending)
+        if (_isPlayerOne)
         {
             ActivateAttackAgainstPlayerOne();
         }
