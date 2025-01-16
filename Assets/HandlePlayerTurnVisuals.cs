@@ -446,25 +446,25 @@ public class HandlePlayerTurnVisuals : MonoBehaviour
     {
         if (IsPlayerOne && attacking)
         {
-            string newText = ("I cast" + LastSaidWord + "!");
+            string newText = ("I cast " + LastSaidWord + "!");
             speechBubbleTextPlayerOne.text = newText;
             SpeechBubblePlayerOne.Play("SpeechBubblePlayerOne");
         }
         else if (!IsPlayerOne && attacking)
         {
-            string newText = ("I cast" + LastSaidWord + "!");
+            string newText = ("I cast " + LastSaidWord + "!");
             speechBubbleTextPlayerTwo.text = newText;
             SpeechBubblePlayerTwo.Play("SpeechBubblePlayerTwo");
         }
         else if (IsPlayerOne && !attacking)
         {
-            string newText = ("I cast" + LastSaidWord + "!");
+            string newText = ("I cast " + LastSaidWord + "!");
             speechBubbleTextPlayerTwo.text = newText;
             SpeechBubblePlayerTwo.Play("SpeechBubblePlayerTwo");
         }
         else if (!IsPlayerOne && !attacking)
         {
-            string newText = ("I cast" + LastSaidWord + "!");
+            string newText = ("I cast " + LastSaidWord + "!");
             speechBubbleTextPlayerOne.text = newText;
             SpeechBubblePlayerOne.Play("SpeechBubblePlayerOne");
         }
