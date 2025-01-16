@@ -24,7 +24,7 @@ public class AttackState : IState
     {
         Actions.StartAttack?.Invoke();
 
-        attacker.SpeechRecognitionController.Click();
+        //attacker.SpeechRecognitionController.Click();
         stateManager.StartCoroutine(WaitForWord()); // start the state with a couroutine
         stateManager.setLastSayedWord(""); // reset last sayed word to nothing
     }
@@ -90,6 +90,7 @@ public class AttackState : IState
         else
             answerdWord = "";
 
+        answerdWord = stateManager.Illegalwordlist.CleanWord(answerdWord);
 
         if (string.IsNullOrEmpty(answerdWord) || stateManager.Illegalwordlist.isInList(answerdWord)) // if a already used word is given or no word is given then damage player check for ending and go back to rock paper siscor
         {

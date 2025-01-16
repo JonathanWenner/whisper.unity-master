@@ -14,6 +14,10 @@ public class Wand : MonoBehaviour
         nothing
     }
 
+    public GameObject prefabPaper;
+    public GameObject prefabRock;
+    public GameObject prefabScissor;
+
     // detected gestures
     WandGestures detectedGesture = WandGestures.nothing;
     bool isRecording = false;

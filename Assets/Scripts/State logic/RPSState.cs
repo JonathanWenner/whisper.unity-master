@@ -11,6 +11,18 @@ public class RPSState : IState
     private Player player2;
     private float StateTime = GameSettings.RPSStateTime;
 
+    private GameObject preFabPaperP1;
+    private GameObject preFabRockP1;
+    private GameObject preFabScissorP1;
+    private GameObject[] preFabListP1;
+    private int currentIndexSwitcher;
+
+    private GameObject preFabPaperP2;
+    private GameObject preFabRockP2;
+    private GameObject preFabScissorP2;
+    private GameObject[] preFabListP2;
+    private float switchTime = 0.5f;
+    private float switchTimer = 0.5f;
 
     public RPSState(StateManager stateManager)
     {
@@ -26,26 +38,49 @@ public class RPSState : IState
     {
         Debug.Log("rock paper siscors has started");
 
+        preFabPaperP1 = player1.Wand.prefabPaper;
+        preFabScissorP1 = player1.Wand.prefabScissor;
+        preFabRockP1 = player1.Wand.prefabRock;
+
+        preFabPaperP2 = player2.Wand.prefabPaper;
+        preFabScissorP2 = player2.Wand.prefabScissor;
+        preFabRockP2 = player2.Wand.prefabRock;
+
+        preFabListP1 = new GameObject[] { preFabRockP1, preFabPaperP1, preFabScissorP1 };
+        preFabListP2 = new GameObject[] { preFabRockP2, preFabPaperP2, preFabScissorP2 };
+
+        for (int i = 0; i < preFabListP1.Length; i++)
+        {
+            preFabListP1[i].SetActive(i == currentIndexSwitcher);
+            preFabListP2[i].SetActive(i == currentIndexSwitcher);
+        }
+
+
         player1Gesture = Wand.WandGestures.nothing;
         player2Gesture = Wand.WandGestures.nothing;
 
 
         //ACTIVATE WITH WANTS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        //player1.Wand.StartRecording(player1.GetPlayerNumber(), StateTime);
-        //player2.Wand.StartRecording(player2.GetPlayerNumber(), StateTime);
+        player1.Wand.StartRecording(player1.GetPlayerNumber(), StateTime);
+        player2.Wand.StartRecording(player2.GetPlayerNumber(), StateTime);
 
         stateManager.StartCoroutine(WaitForChoices());
     }
 
     public void Update()
     {
+        switchTimer -= Time.deltaTime;
         stateManager.timer -= Time.deltaTime;
         stateManager.uiHandler.drawTimer(stateManager.timer);
     }
 
     public void Exit()
     {
-
+        for (int i = 0; i < preFabListP1.Length; i++)
+        {
+            preFabListP1[i].SetActive(false);
+            preFabListP2[i].SetActive(false);
+        }
     }
 
     private IEnumerator WaitForChoices()
@@ -56,10 +91,72 @@ public class RPSState : IState
             yield return null;
 
 
+            if (switchTimer < 0)
+            {
+                if (player1Gesture == Wand.WandGestures.nothing)
+                    preFabListP1[currentIndexSwitcher].SetActive(false);
+
+                if (player2Gesture == Wand.WandGestures.nothing)
+                    preFabListP2[currentIndexSwitcher].SetActive(false);
+
+                currentIndexSwitcher = (currentIndexSwitcher + 1) % preFabListP1.Length;
+
+                if (player1Gesture == Wand.WandGestures.nothing)
+                    preFabListP1[currentIndexSwitcher].SetActive(true);
+
+                if (player2Gesture == Wand.WandGestures.nothing)
+                    preFabListP2[currentIndexSwitcher].SetActive(true);
+
+                switchTimer = switchTime;
+            }
+
+            if (player1Gesture != Wand.WandGestures.nothing)
+            {
+                if (player1Gesture == Wand.WandGestures.Rock)
+                {
+                    preFabListP1[0].SetActive(true);
+                    preFabListP1[1].SetActive(false);
+                    preFabListP1[2].SetActive(false);
+                }
+                else if (player1Gesture == Wand.WandGestures.Paper)
+                {
+                    preFabListP1[0].SetActive(false);
+                    preFabListP1[1].SetActive(true);
+                    preFabListP1[2].SetActive(false);
+                }
+                else if (player1Gesture == Wand.WandGestures.Scissor)
+                {
+                    preFabListP1[0].SetActive(false);
+                    preFabListP1[1].SetActive(false);
+                    preFabListP1[2].SetActive(true);
+                }
+            }
+            if (player2Gesture != Wand.WandGestures.nothing)
+            {
+                if (player2Gesture == Wand.WandGestures.Rock)
+                {
+                    preFabListP2[0].SetActive(true);
+                    preFabListP2[1].SetActive(false);
+                    preFabListP2[2].SetActive(false);
+                }
+                else if (player2Gesture == Wand.WandGestures.Paper)
+                {
+                    preFabListP2[0].SetActive(false);
+                    preFabListP2[1].SetActive(true);
+                    preFabListP2[2].SetActive(false);
+                }
+                else if (player2Gesture == Wand.WandGestures.Scissor)
+                {
+                    preFabListP2[0].SetActive(false);
+                    preFabListP2[1].SetActive(false);
+                    preFabListP2[2].SetActive(true);
+                }
+            }
+
             //CHANGE BACK!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-            //player1Gesture = player1.Wand.GetDetectedGesture();
-            //player2Gesture = player2.Wand.GetDetectedGesture();
+            player1Gesture = player1.Wand.GetDetectedGesture();
+            player2Gesture = player2.Wand.GetDetectedGesture();
 
             if (Input.GetKey(KeyCode.S))
                 player2Gesture = Wand.WandGestures.Paper;

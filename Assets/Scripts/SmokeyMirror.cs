@@ -11,6 +11,8 @@ public class SmokeyMirror : MonoBehaviour
     [SerializeField] Button validButton;
     [SerializeField] Button InValidButton;
     [SerializeField] public TMP_InputField InputField;
+    public TextMeshProUGUI timer;
+    public StateManager stateManager;
 
     public bool isValid = false;
     public bool gotInput = false;
@@ -26,6 +28,11 @@ public class SmokeyMirror : MonoBehaviour
         stopRecording.onClick.AddListener(OnStopRecordingPress);
         InputField.onEndEdit.AddListener(OnEnterAnswer);
     }
+    private void Update()
+    {
+        timer.text = stateManager.timer.ToString();
+    }
+
 
     private void OnStopRecordingPress()
     {
