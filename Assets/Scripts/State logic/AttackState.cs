@@ -49,29 +49,29 @@ public class AttackState : IState
         stateManager.timer = stateTime;
         answerdWord = "";
 
-        while (stateManager.timer > 0)
-        {
+        //while (stateManager.timer > 0)
+        //{
 
-            yield return null;
+        //    yield return null;
 
-            if (stateManager.smokeyMirror.HasAnswered()) // stop early if smoke and mirror says that the player has answered
-            {
-                break;
-            }
-        }
+        //    if (stateManager.smokeyMirror.HasAnswered()) // stop early if smoke and mirror says that the player has answered
+        //    {
+        //        break;
+        //    }
+        //}
 
-        attacker.SpeechRecognitionController.Click();                                                           //turn of recording
+/*        attacker.SpeechRecognitionController.Click();         */                                                  //turn of recording
 
-        while (!stateManager.gotWord)
-        {
-            yield return null;
-        }
-        yield return new WaitForSeconds(0.5f);
-        stateManager.gotWord = false;
+        //while (!stateManager.gotWord)
+        //{
+        //    yield return null;
+        //}
+        //yield return new WaitForSeconds(0.5f);
+        //stateManager.gotWord = false;
 
 
         Debug.Log("found answer sentance: " + stateManager.gottenWord);
-        answerdWord = stateManager.Illegalwordlist.CleanWord(stateManager.FilterAnswerSentance(stateManager.gottenWord)); //clean word
+        //answerdWord = stateManager.Illegalwordlist.CleanWord(stateManager.FilterAnswerSentance(stateManager.gottenWord)); //clean word
         stateManager.gottenWord = "";
 
 
@@ -79,7 +79,7 @@ public class AttackState : IState
         Debug.Log("start smoke and mirror check");
 
         stateManager.smokeyMirror.gotInput = false;
-        stateManager.smokeyMirror.InputField.text = answerdWord;
+        //stateManager.smokeyMirror.InputField.text = answerdWord;
         while (!stateManager.smokeyMirror.gotInput)
         {
             yield return null;

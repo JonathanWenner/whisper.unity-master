@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Rendering;
 using UnityEngine.UI;
 
 public class SmokeyMirror : MonoBehaviour
@@ -23,6 +24,7 @@ public class SmokeyMirror : MonoBehaviour
         validButton.onClick.AddListener(OnValidPPress);
         InValidButton.onClick.AddListener(OnInvalidPress);
         stopRecording.onClick.AddListener(OnStopRecordingPress);
+        InputField.onEndEdit.AddListener(OnEnterAnswer);
     }
 
     private void OnStopRecordingPress()
@@ -52,6 +54,14 @@ public class SmokeyMirror : MonoBehaviour
 
     }
 
+    void OnEnterAnswer(string yes)
+    {
+        if (Input.GetKey(KeyCode.Return) || Input.GetKey(KeyCode.KeypadEnter))
+        {
+            OnValidPPress();
+            Debug.Log("enter pressed");
+        }
+    }
 
 
 

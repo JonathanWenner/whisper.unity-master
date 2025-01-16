@@ -29,9 +29,10 @@ public class RPSState : IState
         player1Gesture = Wand.WandGestures.nothing;
         player2Gesture = Wand.WandGestures.nothing;
 
+
         //ACTIVATE WITH WANTS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        player1.Wand.StartRecording(player1.GetPlayerNumber(), StateTime);
-        player2.Wand.StartRecording(player2.GetPlayerNumber(), StateTime);
+        //player1.Wand.StartRecording(player1.GetPlayerNumber(), StateTime);
+        //player2.Wand.StartRecording(player2.GetPlayerNumber(), StateTime);
 
         stateManager.StartCoroutine(WaitForChoices());
     }
@@ -57,13 +58,11 @@ public class RPSState : IState
 
             //CHANGE BACK!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-            if (Input.GetKeyDown(KeyCode.S))
+            //player1Gesture = player1.Wand.GetDetectedGesture();
+            //player2Gesture = player2.Wand.GetDetectedGesture();
+
+            if (Input.GetKey(KeyCode.S))
                 player2Gesture = Wand.WandGestures.Paper;
-
-
-            player1Gesture = player1.Wand.GetDetectedGesture();
-            player2Gesture = player2.Wand.GetDetectedGesture();
-
 
             if (player1Gesture != Wand.WandGestures.nothing && player2Gesture != Wand.WandGestures.nothing)
             {

@@ -127,19 +127,19 @@ public class TCPServer : MonoBehaviour
     }
 
     public void SendMessageToAll(string message) {
-        SendMessageToClient(stream1, message);
-        SendMessageToClient(stream2, message);
+        SendMessageToWand1(message);
+        SendMessageToWand2(message);
     }
 
     public void SendMessageToWand1(string message)
     {
-        if (!WandClient1.Connected) return;
+        if (WandClient1 == null) return;
         SendMessageToClient(stream1, message);
     }
 
     public void SendMessageToWand2(string message)
     {
-        if (!WandClient2.Connected) return;
+        if (WandClient2 == null) return;
         SendMessageToClient(stream2, message);
     }
 
